@@ -5,6 +5,8 @@ This software is under heavy development. It is not ready to work out of the box
 
 Main entry point is *DartsScorer_1.py* (*DartsScorer.py* is an older version with one camera only).
 
+Watch a demo of the setup here: https://www.youtube.com/playlist?list=PLqymqC7nbI7an1dZW1kxbPPd-v0t5l6lF
+
 Detected darts with score mapping and a quick/dirty GUI to play simple 501:
 
 ![Detection](Bilder/Darts_Detection_NEW.png) ![GUI](Bilder/GAME_Recognition.jpeg)
