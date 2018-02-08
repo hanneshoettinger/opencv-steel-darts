@@ -7,7 +7,7 @@ Main entry point is *DartsScorer_1.py* (*DartsScorer.py* is an older version wit
 
 Watch a demo of the setup here: https://www.youtube.com/playlist?list=PLqymqC7nbI7an1dZW1kxbPPd-v0t5l6lF
 
-Detected darts with score mapping and a quick/dirty GUI to play simple 501:
+Detected darts with score mapping and a Test-GUI to play simple 501:
 
 ![Detection](Bilder/Darts_Detection_NEW.png) ![GUI](Bilder/GAME_Recognition.jpeg)
 
@@ -80,7 +80,7 @@ The transformation works like that (reading from right to left):
 
 * Dartboard sector wires need to be removed with a filter to find ellipse.
 * Dartboard: text close to outer wire of double ring bad for calibration as the contours overlap with the wire with a specific camera mounting (had to remove it manually with a black pen)
-* Make source and destination point selection for the found points to be sure the mapping is correct? If the camera is places differently, other segments are detected as the source points for the transformation.
+* Make source and destination point selection for the found points to be sure the mapping is correct? If the camera is placed differently, other segments are detected as the source points for the transformation.
 
 ## Lighting 
 
