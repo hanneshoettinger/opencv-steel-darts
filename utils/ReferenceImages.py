@@ -4,11 +4,11 @@ import cv2
 
 from VideoCapture import VideoStream
 
-cam1 = None
-cam2 = None
-
-img1_path = path.abspath('../test_images/cam1.jpg')
-img2_path = path.abspath('../test_images/cam1.jpg')
+current_path = path.abspath(path.dirname(__file__))
+img_path = path.abspath(path.join(current_path, '../test_images'))
+img1_path = path.abspath(path.join(img_path, 'cam1.jpg'))
+img2_path = path.abspath(path.join(img_path, 'cam2.jpg'))
+print(current_path, img_path, img2_path)
 
 
 def loadReferenceImages():
