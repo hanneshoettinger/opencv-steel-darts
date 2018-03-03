@@ -1,17 +1,13 @@
 __author__ = "Hannes Hoettinger"
 
-import numpy as np
-import cv2
-import time
-import cv2.cv as cv
 import math
 import pickle
+import time
 
-img = cv2.imread("D:\Projekte\PycharmProjects\DartsScorer\Darts\Dartboard_2.png")
-img2 = cv2.imread("D:\Projekte\PycharmProjects\DartsScorer\Darts\Dartboard_3.png")
+import cv2
+import numpy as np
 
-vidcap = cv2.VideoCapture("C:\Users\hanne\OneDrive\Projekte\GitHub\darts\Darts\Darts_Testvideo_9_1.mp4")
-from_video = True
+from_video = False
 
 DEBUG = True
 
@@ -20,6 +16,7 @@ winName = "test2"
 center_dartboard = []
 ring_radius = []
 transformation_matrix = []
+vidcap = None
 
 class dartThrow:
     def __init__(self):
@@ -101,10 +98,6 @@ def dist(x1,y1, x2,y2, x3,y3): # x3,y3 is the point
 
 def DartLocation(x_coord,y_coord):
     try:
-
-            #start a fresh set of points
-            points = []
-
             calFile = open('calibrationData.pkl', 'rb')
             calData = CalibrationData()
             calData = pickle.load(calFile)
@@ -136,21 +129,18 @@ def DartLocation(x_coord,y_coord):
 
     #system not calibrated
     except AttributeError as err1:
-        print err1
+        print(err1)
         return (-1, -1)
 
     except NameError as err2:
         #not calibrated error
-        print err2
+        print(err2)
         return (-2, -2)
 
 
 #Returns dartThrow (score, multiplier, angle, magnitude) based on x,y location
 def DartRegion(dart_loc):
     try:
-            height = 800
-            width = 800
-
             global dartInfo
 
             dartInfo = dartThrow()
@@ -170,7 +160,7 @@ def DartRegion(dart_loc):
 
             angleDiffMul = int((dart_angle) / 18.0)
 
-            print vx, vy, dart_angle
+            print(vx, vy, dart_angle)
 
             #starting from the 20 points
             if angleDiffMul == 19:
@@ -250,13 +240,13 @@ def DartRegion(dart_loc):
 
     #system not calibrated
     except AttributeError as err1:
-        print err1
+        print(err1)
         dartInfo = dartThrow()
         return dartInfo
 
     except NameError as err2:
         #not calibrated error
-        print err2
+        print(err2)
         dartInfo = dartThrow()
         return dartInfo
 
@@ -283,13 +273,13 @@ def getDart():
 
     while success:
         time.sleep(0.1)
-        success,image = vidcap.read()
+        success, _ = vidcap.read()
         t_plus = cv2.cvtColor(vidcap.read()[1], cv2.COLOR_RGB2GRAY)
         dimg = cv2.absdiff(t, t_plus)
         # cv2.imshow(winName, edges(t_minus, t, t_plus))
         blur = cv2.GaussianBlur(dimg,(5,5),0)
         blur = cv2.bilateralFilter(blur,9,75,75)
-        ret, thresh = cv2.threshold(blur, 60, 255, 0)
+        _, thresh = cv2.threshold(blur, 60, 255, 0)
         if cv2.countNonZero(thresh) > x and cv2.countNonZero(thresh) < 15000: ## threshold important -> make accessible
 
             if from_video:
@@ -345,8 +335,8 @@ def getDart():
             corners_new = np.delete(corners, [cornerdata], axis=0)  # delete corners to form new array
 
             # find left and rightmost corners
-            rows,cols = dimg.shape[:2]
-            [vx,vy,x,y] = cv2.fitLine(corners_new,cv.CV_DIST_HUBER, 0,0.1,0.1)
+            _, cols = dimg.shape[:2]
+            [vx,vy,x,y] = cv2.fitLine(corners_new, cv2.DIST_HUBER, 0,0.1,0.1)
             lefty = int((-x*vy/vx) + y)
             righty = int(((cols-x)*vy/vx)+y)
 
@@ -364,7 +354,7 @@ def getDart():
 
             corners_final = np.delete(corners_new, [cornerdata], axis=0)  # delete corners to form new array
 
-            ret, thresh = cv2.threshold(blur, 60, 255, 0)
+            _, thresh = cv2.threshold(blur, 60, 255, 0)
             ## threshold important -> make accessible
             if cv2.countNonZero(thresh) > 15000:
                 continue
@@ -397,7 +387,7 @@ def getDart():
                     corners_temp = cornerdata
                     maxloc = np.argmax(corners_temp, axis=0)
                     locationofdart = corners_temp[maxloc]
-                    print "### used different location due to noise!"
+                    print("### used different location due to noise!")
 
                 cv2.circle(t_plus_copy, (locationofdart.item(0),locationofdart.item(1)), 10,(0, 0, 0),2, 8)
                 cv2.circle(t_plus_copy, (locationofdart.item(0), locationofdart.item(1)), 2, (0, 0, 0), 2, 8)
@@ -408,12 +398,12 @@ def getDart():
                 dartInfo = DartRegion(dartloc) #cal_image
 
             except:
-                print "Something went wrong in finding the darts location!"
+                print("Something went wrong in finding the darts location!")
                 continue
 
             # check for the location of the dart with the calibration
 
-            print dartInfo.base, dartInfo.multiplier
+            print(dartInfo.base, dartInfo.multiplier)
 
             if breaker == 1:
                 cv2.imwrite("frame2.jpg", testimg)  # save dart1 frame
@@ -468,6 +458,6 @@ dartInfo = dartThrow()
 
 
 if __name__ == '__main__':
-    print "Welcome to darts!"
+    print("Welcome to darts!")
     getDart()
     #getTransformation()

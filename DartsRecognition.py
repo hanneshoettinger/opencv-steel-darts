@@ -1,15 +1,15 @@
 __author__ = "Hannes Hoettinger"
 
-import numpy as np
-import cv2
-import time
-import cv2.cv as cv
 import math
 import pickle
-from Classes import *
-from MathFunctions import *
-from DartsMapping import *
-from Draw import *
+import time
+
+import cv2
+import numpy as np
+
+from Classes import DartDef
+from DartsMapping import getDartRegion, getTransformedLocation
+from MathFunctions import dist
 
 DEBUG = False
 
@@ -24,7 +24,7 @@ def cam2gray(cam):
 
 
 def getThreshold(cam, t):
-    success, t_plus = cam2gray(cam)
+    _, t_plus = cam2gray(cam)
     dimg = cv2.absdiff(t, t_plus)
 
     blur = cv2.GaussianBlur(dimg, (5, 5), 0)
@@ -75,7 +75,7 @@ def filterCorners(corners):
 
 
 def filterCornersLine(corners, rows, cols):
-    [vx, vy, x, y] = cv2.fitLine(corners, cv.CV_DIST_HUBER, 0, 0.1, 0.1)
+    [vx, vy, x, y] = cv2.fitLine(corners, cv2.DIST_HUBER, 0, 0.1, 0.1)
     lefty = int((-x * vy / vx) + y)
     righty = int(((cols - x) * vy / vx) + y)
 
@@ -119,7 +119,7 @@ def getRealLocation(corners_final, mount):
         corners_temp = cornerdata
         maxloc = np.argmax(corners_temp, axis=0)
         locationofdart = corners_temp[maxloc]
-        print "### used different location due to noise!"
+        print("### used different location due to noise!")
 
     return locationofdart
 
@@ -151,7 +151,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
         thresh_R = getThreshold(cam_R, t_R)
         thresh_L = getThreshold(cam_L, t_L)
 
-        print cv2.countNonZero(thresh_R)
+        print(cv2.countNonZero(thresh_R))
         ## threshold important
         if (cv2.countNonZero(thresh_R) > minThres and cv2.countNonZero(thresh_R) < maxThres) \
             or (cv2.countNonZero(thresh_L) > minThres and cv2.countNonZero(thresh_L) < maxThres):
@@ -168,7 +168,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
 
             # dart outside?
             if corners_R.size < 40 and corners_L.size < 40:
-                print "### dart not detected"
+                print("### dart not detected")
                 continue
 
             # filter corners
@@ -177,7 +177,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
 
             # dart outside?
             if corners_f_R.size < 30 and corners_f_L.size < 30:
-                print "### dart not detected"
+                print("### dart not detected")
                 continue
 
             # find left and rightmost corners#
@@ -189,11 +189,11 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
             _, thresh_L = cv2.threshold(blur_L, 60, 255, 0)
 
             # check if it was really a dart
-            print cv2.countNonZero(thresh_R)
+            print(cv2.countNonZero(thresh_R))
             if cv2.countNonZero(thresh_R) > maxThres*2 or cv2.countNonZero(thresh_L) > maxThres*2:
                 continue
 
-            print "Dart detected"
+            print("Dart detected")
             # dart was found -> increase counter
             breaker += 1
 
@@ -220,7 +220,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
                 cv2.circle(testimg, (locationofdart_R.item(0), locationofdart_R.item(1)), 10, (255, 255, 255), 2, 8)
                 cv2.circle(testimg, (locationofdart_R.item(0), locationofdart_R.item(1)), 2, (0, 255, 0), 2, 8)
             except:
-                print "Something went wrong in finding the darts location!"
+                print("Something went wrong in finding the darts location!")
                 breaker -= 1
                 continue
 
@@ -234,7 +234,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
                 else:
                     dartInfo = dartInfo_L
 
-            print dartInfo.base, dartInfo.multiplier
+            print(dartInfo.base, dartInfo.multiplier)
 
             if breaker == 1:
                 GUI.dart1entry.insert(10,str(dartInfo.base * dartInfo.multiplier))
@@ -294,16 +294,13 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
     GUI.finalentry.delete(0, 'end')
     GUI.finalentry.insert(10,finalScore)
 
-    print finalScore
+    print(finalScore)
 
 
 if __name__ == '__main__':
-    print "Welcome to darts!"
-    img = cv2.imread("D:\Projekte\PycharmProjects\DartsScorer\Darts\Dartboard_2.png")
-    img2 = cv2.imread("D:\Projekte\PycharmProjects\DartsScorer\Darts\Dartboard_3.png")
+    print("Welcome to darts!")
 
-    vidcap = cv2.VideoCapture("C:\Users\hanne\OneDrive\Projekte\GitHub\darts\Darts\Darts_Testvideo_9_1.mp4")
-    from_video = True
+    from_video = False
 
 # if DEBUG:
 #     loc_x = dartloc[0]  # 400 + dartInfo.magnitude * math.tan(dartInfo.angle * math.pi/180)

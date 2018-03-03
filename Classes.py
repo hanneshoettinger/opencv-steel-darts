@@ -1,8 +1,8 @@
 __author__ = "Hannes Hoettinger"
 
 import math
+
 import cv2
-import cv2.cv as cv
 
 DEBUG = True
 
@@ -57,4 +57,3 @@ class CalibrationData:
         self.sectorangle = 2 * math.pi / 20
         self.dstpoints = []
         self.transformation_matrix = []
-

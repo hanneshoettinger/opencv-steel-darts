@@ -1,22 +1,19 @@
 __author__ = "Hannes Hoettinger"
 
-import cv2                   #open cv2
-import cv2.cv as cv          #open cv
-import time
-import numpy as np
-from threading import Thread
-from threading import Event
-import sys
 import math
-import pickle
 import os.path
-from im2figure import *
-from numpy.linalg import inv
-from MathFunctions import *
-from Classes import *
-from Draw import *
-from VideoCapture import VideoStream
+import pickle
+import sys
+import time
+from threading import Event, Thread
 
+import cv2  # open cv2
+import numpy as np
+
+from Classes import CalibrationData, EllipseDef
+from Draw import Draw
+from MathFunctions import intersectLineCircle, intersectLines
+from VideoCapture import VideoStream
 
 DEBUG = False
 
@@ -63,10 +60,10 @@ def transformation(imCalRGB, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
     drawBoard = Draw()
     new_image = drawBoard.drawBoard(new_image, calData)
 
-    cv2.circle(new_image, (int(newtop[0]), int(newtop[1])), 2, cv.CV_RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newbottom[0]), int(newbottom[1])), 2, cv.CV_RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newleft[0]), int(newleft[1])), 2, cv.CV_RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newright[0]), int(newright[1])), 2, cv.CV_RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newtop[0]), int(newtop[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newbottom[0]), int(newbottom[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newleft[0]), int(newleft[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newright[0]), int(newright[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
 
     cv2.imshow('manipulation', new_image)
 
@@ -123,10 +120,6 @@ def manipulateTransformationPoints(imCal, calData):
 
 def autocanny(imCal):
     # apply automatic Canny edge detection using the computed median
-    sigma = 0.33
-    v = np.median(imCal)
-    #lower = int(max(0, (1.0 - sigma) * v))
-    #upper = int(min(255, (1.0 + sigma) * v))
     edged = cv2.Canny(imCal, 250, 255)
 
     return edged
@@ -136,7 +129,7 @@ def findEllipse(thresh2, image_proc_img):
 
     Ellipse = EllipseDef()
 
-    contours, hierarchy = cv2.findContours(thresh2, 1, 2)
+    contours, _ = cv2.findContours(thresh2, 1, 2)
 
     minThresE = 200000/4
     maxThresE = 1000000/4
@@ -152,16 +145,14 @@ def findEllipse(thresh2, image_proc_img):
                 a, b = ellipse[1]
                 angle = ellipse[2]
 
-                center_ellipse = (x, y)
-
                 a = a / 2
                 b = b / 2
 
                 cv2.ellipse(image_proc_img, (int(x), int(y)), (int(a), int(b)), int(angle), 0.0, 360.0,
-                            cv.CV_RGB(255, 0, 0))
+                            cv2.RGB(255, 0, 0))
         # corrupted file
         except:
-            print "error"
+            print("error")
             return Ellipse, image_proc_img
 
     Ellipse.a = a
@@ -295,11 +286,11 @@ def getTransformationPoints(image_proc_img, mount):
     imCalHSV = cv2.cvtColor(image_proc_img, cv2.COLOR_BGR2HSV)
     kernel = np.ones((5, 5), np.float32) / 25
     blur = cv2.filter2D(imCalHSV, -1, kernel)
-    h, s, imCal = cv2.split(blur)
+    _, _, imCal = cv2.split(blur)
 
     ## threshold important -> make accessible
     #ret, thresh = cv2.threshold(imCal, 140, 255, cv2.THRESH_BINARY_INV)
-    ret, thresh = cv2.threshold(imCal, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    _, thresh = cv2.threshold(imCal, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     ## kernel size important -> make accessible
     # very important -> removes lines outside the outer ellipse -> find ellipse
@@ -354,10 +345,10 @@ def getTransformationPoints(image_proc_img, mount):
         source_points.append(intersectp_s[left_idx])  # left
         source_points.append(intersectp_s[right_idx])  # right
 
-    cv2.circle(image_proc_img, (int(source_points[0][0]), int(source_points[0][1])), 3, cv.CV_RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[1][0]), int(source_points[1][1])), 3, cv.CV_RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[2][0]), int(source_points[2][1])), 3, cv.CV_RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[3][0]), int(source_points[3][1])), 3, cv.CV_RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[0][0]), int(source_points[0][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[1][0]), int(source_points[1][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[2][0]), int(source_points[2][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[3][0]), int(source_points[3][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
 
     winName2 = "th circles?"
     cv2.namedWindow(winName2, cv2.CV_WINDOW_AUTOSIZE)
@@ -372,17 +363,15 @@ def getTransformationPoints(image_proc_img, mount):
 def calibrate(cam_R, cam_L):
 
     try:
-        success, imCalRGB_R = cam_R.read()
+        _, imCalRGB_R = cam_R.read()
         _, imCalRGB_L = cam_L.read()
 
     except:
-        print "Could not init cams"
+        print("Could not init cams")
         return
 
     imCal_R = imCalRGB_R.copy()
     imCal_L = imCalRGB_L.copy()
-
-    imCalRGBorig = imCalRGB_R.copy()
 
     cv2.imwrite("frame1_R.jpg", imCalRGB_R)     # save calibration frame
     cv2.imwrite("frame1_L.jpg", imCalRGB_L)  # save calibration frame
@@ -437,7 +426,7 @@ def calibrate(cam_R, cam_L):
 
             #corrupted file
             except EOFError as err:
-                print err
+                print(err)
 
         # start calibration if no calibration data exists
         else:
@@ -463,8 +452,8 @@ def calibrate(cam_R, cam_L):
 
             cv2.destroyAllWindows()
 
-            print "The dartboard image has now been normalized."
-            print ""
+            print("The dartboard image has now been normalized.")
+            print("")
 
             cv2.imshow(winName4, imCal_R)
             test = cv2.waitKey(0)
@@ -490,7 +479,7 @@ def calibrate(cam_R, cam_L):
 
 
 if __name__ == '__main__':
-    print "Welcome to darts!"
+    print("Welcome to darts!")
 
     cam_R = VideoStream(src=2).start()
     cam_L = VideoStream(src=3).start()
