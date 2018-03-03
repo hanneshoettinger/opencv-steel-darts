@@ -1,5 +1,3 @@
-__author__ = "Hannes Hoettinger"
-
 import math
 import pickle
 import time
@@ -38,7 +36,7 @@ def diff2blur(cam, t):
     _, t_plus = cam2gray(cam)
     dimg = cv2.absdiff(t, t_plus)
 
-    ## kernel size important -> make accessible
+    # kernel size important -> make accessible
     # filter noise from image distortions
     kernel = np.ones((5, 5), np.float32) / 25
     blur = cv2.filter2D(dimg, -1, kernel)
@@ -48,8 +46,9 @@ def diff2blur(cam, t):
 
 def getCorners(img_in):
     # number of features to track is a distinctive feature
-    ## FeaturesToTrack important -> make accessible
-    edges = cv2.goodFeaturesToTrack(img_in, 640, 0.0008, 1, mask=None, blockSize=3, useHarrisDetector=1, k=0.06)  # k=0.08
+    # FeaturesToTrack important -> make accessible
+    edges = cv2.goodFeaturesToTrack(
+        img_in, 640, 0.0008, 1, mask=None, blockSize=3, useHarrisDetector=1, k=0.06)  # k=0.08
     corners = np.int0(edges)
 
     return corners
@@ -62,14 +61,15 @@ def filterCorners(corners):
     for i in corners:
         xl, yl = i.ravel()
         # filter noise to only get dart arrow
-        ## threshold important -> make accessible
+        # threshold important -> make accessible
         if abs(mean_corners[0][0] - xl) > 180:
             cornerdata.append(tt)
         if abs(mean_corners[0][1] - yl) > 120:
             cornerdata.append(tt)
         tt += 1
 
-    corners_new = np.delete(corners, [cornerdata], axis=0)  # delete corners to form new array
+    # delete corners to form new array
+    corners_new = np.delete(corners, [cornerdata], axis=0)
 
     return corners_new
 
@@ -85,12 +85,13 @@ def filterCornersLine(corners, rows, cols):
         xl, yl = i.ravel()
         # check distance to fitted line, only draw corners within certain range
         distance = dist(0, lefty, cols - 1, righty, xl, yl)
-        if distance > 40:  ## threshold important -> make accessible
+        if distance > 40:  # threshold important -> make accessible
             cornerdata.append(tt)
 
         tt += 1
 
-    corners_final = np.delete(corners, [cornerdata], axis=0)  # delete corners to form new array
+    # delete corners to form new array
+    corners_final = np.delete(corners, [cornerdata], axis=0)
 
     return corners_final
 
@@ -109,8 +110,9 @@ def getRealLocation(corners_final, mount):
     tt = 0
     for i in corners_final:
         xl, yl = i.ravel()
-        distance = abs(locationofdart.item(0) - xl) + abs(locationofdart.item(1) - yl)
-        if distance < 40:  ## threshold important
+        distance = abs(locationofdart.item(0) - xl) + \
+            abs(locationofdart.item(1) - yl)
+        if distance < 40:  # threshold important
             tt += 1
         else:
             cornerdata.append(tt)
@@ -129,7 +131,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
     finalScore = 0
     count = 0
     breaker = 0
-    ## threshold important -> make accessible
+    # threshold important -> make accessible
     minThres = 2000/2
     maxThres = 15000/2
 
@@ -152,9 +154,9 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
         thresh_L = getThreshold(cam_L, t_L)
 
         print(cv2.countNonZero(thresh_R))
-        ## threshold important
+        # threshold important
         if (cv2.countNonZero(thresh_R) > minThres and cv2.countNonZero(thresh_R) < maxThres) \
-            or (cv2.countNonZero(thresh_L) > minThres and cv2.countNonZero(thresh_L) < maxThres):
+                or (cv2.countNonZero(thresh_L) > minThres and cv2.countNonZero(thresh_L) < maxThres):
             # wait for camera vibrations
             time.sleep(0.2)
             # filter noise
@@ -211,14 +213,18 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
                 locationofdart_L = getRealLocation(corners_final_L, "left")
 
                 # check for the location of the dart with the calibration
-                dartloc_R = getTransformedLocation(locationofdart_R.item(0), locationofdart_R.item(1), calData_R)
-                dartloc_L = getTransformedLocation(locationofdart_L.item(0), locationofdart_L.item(1), calData_L)
+                dartloc_R = getTransformedLocation(
+                    locationofdart_R.item(0), locationofdart_R.item(1), calData_R)
+                dartloc_L = getTransformedLocation(
+                    locationofdart_L.item(0), locationofdart_L.item(1), calData_L)
                 # detect region and score
                 dartInfo_R = getDartRegion(dartloc_R, calData_R)
                 dartInfo_L = getDartRegion(dartloc_L, calData_L)
 
-                cv2.circle(testimg, (locationofdart_R.item(0), locationofdart_R.item(1)), 10, (255, 255, 255), 2, 8)
-                cv2.circle(testimg, (locationofdart_R.item(0), locationofdart_R.item(1)), 2, (0, 255, 0), 2, 8)
+                cv2.circle(testimg, (locationofdart_R.item(
+                    0), locationofdart_R.item(1)), 10, (255, 255, 255), 2, 8)
+                cv2.circle(testimg, (locationofdart_R.item(
+                    0), locationofdart_R.item(1)), 2, (0, 255, 0), 2, 8)
             except:
                 print("Something went wrong in finding the darts location!")
                 breaker -= 1
@@ -237,15 +243,18 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
             print(dartInfo.base, dartInfo.multiplier)
 
             if breaker == 1:
-                GUI.dart1entry.insert(10,str(dartInfo.base * dartInfo.multiplier))
+                GUI.dart1entry.insert(
+                    10, str(dartInfo.base * dartInfo.multiplier))
                 dart = int(GUI.dart1entry.get())
                 cv2.imwrite("frame2.jpg", testimg)     # save dart1 frame
             elif breaker == 2:
-                GUI.dart2entry.insert(10,str(dartInfo.base * dartInfo.multiplier))
+                GUI.dart2entry.insert(
+                    10, str(dartInfo.base * dartInfo.multiplier))
                 dart = int(GUI.dart2entry.get())
                 cv2.imwrite("frame3.jpg", testimg)     # save dart2 frame
             elif breaker == 3:
-                GUI.dart3entry.insert(10,str(dartInfo.base * dartInfo.multiplier))
+                GUI.dart3entry.insert(
+                    10, str(dartInfo.base * dartInfo.multiplier))
                 dart = int(GUI.dart3entry.get())
                 cv2.imwrite("frame4.jpg", testimg)     # save dart3 frame
 
@@ -263,18 +272,18 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
             t_L = t_plus_L
 
             if playerObj.player == 1:
-                GUI.e1.delete(0,'end')
-                GUI.e1.insert(10,playerObj.score)
+                GUI.e1.delete(0, 'end')
+                GUI.e1.insert(10, playerObj.score)
             else:
-                GUI.e2.delete(0,'end')
-                GUI.e2.insert(10,playerObj.score)
+                GUI.e2.delete(0, 'end')
+                GUI.e2.insert(10, playerObj.score)
 
             finalScore += (dartInfo.base * dartInfo.multiplier)
 
             if breaker == 3:
                 break
 
-            #cv2.imshow(winName, tnow)
+            # cv2.imshow(winName, tnow)
 
         # missed dart
         elif cv2.countNonZero(thresh_R) < maxThres/2 or cv2.countNonZero(thresh_L) < maxThres/2:
@@ -292,7 +301,7 @@ def getDarts(cam_R, cam_L, calData_R, calData_L, playerObj, GUI):
         count += 1
 
     GUI.finalentry.delete(0, 'end')
-    GUI.finalentry.insert(10,finalScore)
+    GUI.finalentry.insert(10, finalScore)
 
     print(finalScore)
 

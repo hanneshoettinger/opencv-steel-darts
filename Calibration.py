@@ -1,5 +1,3 @@
-__author__ = "Hannes Hoettinger"
-
 import math
 import os.path
 import pickle
@@ -38,8 +36,9 @@ def transformation(imCalRGB, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
 
     points = calData.points
 
-    ## sectors are sometimes different -> make accessible
-    # used when line rectangle intersection at specific segment is used for transformation:
+    # sectors are sometimes different -> make accessible
+    # used when line rectangle intersection at specific
+    # segment is used for transformation:
     newtop = destinationPoint(calData.dstpoints[0], calData)
     newbottom = destinationPoint(calData.dstpoints[1], calData)
     newleft = destinationPoint(calData.dstpoints[2], calData)
@@ -49,21 +48,28 @@ def transformation(imCalRGB, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
     new_image = imCalRGB.copy()
 
     # create transformation matrix
-    src = np.array([(points[0][0]+tx1, points[0][1]+ty1), (points[1][0]+tx2, points[1][1]+ty2),
-                    (points[2][0]+tx3, points[2][1]+ty3), (points[3][0]+tx4, points[3][1]+ty4)], np.float32)
+    src = np.array([(points[0][0]+tx1, points[0][1]+ty1),
+                    (points[1][0]+tx2, points[1][1]+ty2),
+                    (points[2][0]+tx3, points[2][1]+ty3),
+                    (points[3][0]+tx4, points[3][1]+ty4)], np.float32)
     dst = np.array([newtop, newbottom, newleft, newright], np.float32)
     transformation_matrix = cv2.getPerspectiveTransform(src, dst)
 
-    new_image = cv2.warpPerspective(new_image, transformation_matrix, (800, 800))
+    new_image = cv2.warpPerspective(
+        new_image, transformation_matrix, (800, 800))
 
     # draw image
     drawBoard = Draw()
     new_image = drawBoard.drawBoard(new_image, calData)
 
-    cv2.circle(new_image, (int(newtop[0]), int(newtop[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newbottom[0]), int(newbottom[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newleft[0]), int(newleft[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newright[0]), int(newright[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newtop[0]), int(
+        newtop[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newbottom[0]), int(
+        newbottom[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newleft[0]), int(
+        newleft[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(new_image, (int(newright[0]), int(
+        newright[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
 
     cv2.imshow('manipulation', new_image)
 
@@ -113,7 +119,8 @@ def manipulateTransformationPoints(imCal, calData):
             imCal_copy[:] = 0
         else:
             # transform the image to form a perfect circle
-            transformation_matrix = transformation(imCal, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4)
+            transformation_matrix = transformation(
+                imCal, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4)
 
     return transformation_matrix
 
@@ -134,7 +141,7 @@ def findEllipse(thresh2, image_proc_img):
     minThresE = 200000/4
     maxThresE = 1000000/4
 
-    ## contourArea threshold important -> make accessible
+    # contourArea threshold important -> make accessible
     for cnt in contours:
         try:  # threshold critical, change on demand?
             if minThresE < cv2.contourArea(cnt) < maxThresE:
@@ -172,7 +179,7 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
     # fit line to find intersec point for dartboard center point
     lines = cv2.HoughLines(edged, 1, np.pi / 80, 100, 100)
 
-    ## sector angles important -> make accessible
+    # sector angles important -> make accessible
     for rho, theta in lines[0]:
         # split between horizontal and vertical lines (take only lines in certain range)
         if theta > np.pi / 180 * angleZone1[0] and theta < np.pi / 180 * angleZone1[1]:
@@ -209,8 +216,10 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
                     if diff < 200 and diff is not 0:
                         continue
 
-                    cv2.line(image_proc_img, (x1, y1), (x2, y2), (255, 0, 0), 1)
-                    cv2.line(image_proc_img, (x3, y3), (x4, y4), (255, 0, 0), 1)
+                    cv2.line(image_proc_img, (x1, y1),
+                             (x2, y2), (255, 0, 0), 1)
+                    cv2.line(image_proc_img, (x3, y3),
+                             (x4, y4), (255, 0, 0), 1)
 
                     p.append((x1, y1))
                     p.append((x2, y2))
@@ -229,8 +238,10 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
                     lines_seg.append([(x1, y1), (x2, y2)])
                     lines_seg.append([(x3, y3), (x4, y4)])
 
-                    cv2.line(image_proc_img, (x1, y1), (x2, y2), (255, 0, 0), 1)
-                    cv2.line(image_proc_img, (x3, y3), (x4, y4), (255, 0, 0), 1)
+                    cv2.line(image_proc_img, (x1, y1),
+                             (x2, y2), (255, 0, 0), 1)
+                    cv2.line(image_proc_img, (x3, y3),
+                             (x4, y4), (255, 0, 0), 1)
 
                     # point offset
                     counter = counter + 4
@@ -246,8 +257,10 @@ def ellipse2circle(Ellipse):
     b = Ellipse.b
 
     # build transformation matrix http://math.stackexchange.com/questions/619037/circle-affine-transformation
-    R1 = np.array([[math.cos(angle), math.sin(angle), 0], [-math.sin(angle), math.cos(angle), 0], [0, 0, 1]])
-    R2 = np.array([[math.cos(angle), -math.sin(angle), 0], [math.sin(angle), math.cos(angle), 0], [0, 0, 1]])
+    R1 = np.array([[math.cos(angle), math.sin(angle), 0],
+                   [-math.sin(angle), math.cos(angle), 0], [0, 0, 1]])
+    R2 = np.array([[math.cos(angle), -math.sin(angle), 0],
+                   [math.sin(angle), math.cos(angle), 0], [0, 0, 1]])
 
     T1 = np.array([[1, 0, -x], [0, 1, -y], [0, 0, 1]])
     T2 = np.array([[1, 0, x], [0, 1, y], [0, 0, 1]])
@@ -288,11 +301,12 @@ def getTransformationPoints(image_proc_img, mount):
     blur = cv2.filter2D(imCalHSV, -1, kernel)
     _, _, imCal = cv2.split(blur)
 
-    ## threshold important -> make accessible
-    #ret, thresh = cv2.threshold(imCal, 140, 255, cv2.THRESH_BINARY_INV)
-    _, thresh = cv2.threshold(imCal, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # threshold important -> make accessible
+    # ret, thresh = cv2.threshold(imCal, 140, 255, cv2.THRESH_BINARY_INV)
+    _, thresh = cv2.threshold(
+        imCal, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    ## kernel size important -> make accessible
+    # kernel size important -> make accessible
     # very important -> removes lines outside the outer ellipse -> find ellipse
     kernel = np.ones((5, 5), np.uint8)
     thresh2 = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
@@ -309,9 +323,11 @@ def getTransformationPoints(image_proc_img, mount):
     if mount == "right":
         angleZone1 = (Ellipse.angle - 5, Ellipse.angle + 5)
         angleZone2 = (Ellipse.angle - 100, Ellipse.angle - 80)
-        lines_seg, image_proc_img = findSectorLines(edged, image_proc_img, angleZone1, angleZone2)
+        lines_seg, image_proc_img = findSectorLines(
+            edged, image_proc_img, angleZone1, angleZone2)
     else:
-        lines_seg, image_proc_img = findSectorLines(edged, image_proc_img, angleZone1=(80, 120), angleZone2=(30, 40))
+        lines_seg, image_proc_img = findSectorLines(
+            edged, image_proc_img, angleZone1=(80, 120), angleZone2=(30, 40))
 
     cv2.imshow("test4", image_proc_img)
 
@@ -322,14 +338,18 @@ def getTransformationPoints(image_proc_img, mount):
     source_points = []
 
     try:
-        new_intersect = np.mean(([intersectp_s[0],intersectp_s[4]]), axis=0, dtype=np.float32)
-        source_points.append(new_intersect) # top
-        new_intersect = np.mean(([intersectp_s[1], intersectp_s[5]]), axis=0, dtype=np.float32)
-        source_points.append(new_intersect) # bottom
-        new_intersect = np.mean(([intersectp_s[2], intersectp_s[6]]), axis=0, dtype=np.float32)
-        source_points.append(new_intersect) # left
-        new_intersect = np.mean(([intersectp_s[3], intersectp_s[7]]), axis=0, dtype=np.float32)
-        source_points.append(new_intersect) # right
+        new_intersect = np.mean(
+            ([intersectp_s[0], intersectp_s[4]]), axis=0, dtype=np.float32)
+        source_points.append(new_intersect)  # top
+        new_intersect = np.mean(
+            ([intersectp_s[1], intersectp_s[5]]), axis=0, dtype=np.float32)
+        source_points.append(new_intersect)  # bottom
+        new_intersect = np.mean(
+            ([intersectp_s[2], intersectp_s[6]]), axis=0, dtype=np.float32)
+        source_points.append(new_intersect)  # left
+        new_intersect = np.mean(
+            ([intersectp_s[3], intersectp_s[7]]), axis=0, dtype=np.float32)
+        source_points.append(new_intersect)  # right
     except:
         pointarray = np.array(intersectp_s)
         top_idx = [np.argmin(pointarray[:, 1])][0]
@@ -345,10 +365,14 @@ def getTransformationPoints(image_proc_img, mount):
         source_points.append(intersectp_s[left_idx])  # left
         source_points.append(intersectp_s[right_idx])  # right
 
-    cv2.circle(image_proc_img, (int(source_points[0][0]), int(source_points[0][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[1][0]), int(source_points[1][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[2][0]), int(source_points[2][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[3][0]), int(source_points[3][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[0][0]), int(
+        source_points[0][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[1][0]), int(
+        source_points[1][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[2][0]), int(
+        source_points[2][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
+    cv2.circle(image_proc_img, (int(source_points[3][0]), int(
+        source_points[3][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
 
     winName2 = "th circles?"
     cv2.namedWindow(winName2, cv2.CV_WINDOW_AUTOSIZE)
@@ -380,7 +404,7 @@ def calibrate(cam_R, cam_L):
     calibrationComplete = False
 
     while calibrationComplete == False:
-        #Read calibration file, if exists
+        # Read calibration file, if exists
         if os.path.isfile("calibrationData_R.pkl"):
             try:
                 calFile = open('calibrationData_R.pkl', 'rb')
@@ -393,18 +417,22 @@ def calibrate(cam_R, cam_L):
                 calData_L = pickle.load(calFile)
                 calFile.close()
 
-                #copy image for old calibration data
+                # copy image for old calibration data
                 transformed_img_R = imCalRGB_R.copy()
                 transformed_img_L = imCalRGB_L.copy()
 
-                transformed_img_R = cv2.warpPerspective(imCalRGB_R, calData_R.transformation_matrix, (800, 800))
-                transformed_img_L = cv2.warpPerspective(imCalRGB_L, calData_L.transformation_matrix, (800, 800))
+                transformed_img_R = cv2.warpPerspective(
+                    imCalRGB_R, calData_R.transformation_matrix, (800, 800))
+                transformed_img_L = cv2.warpPerspective(
+                    imCalRGB_L, calData_L.transformation_matrix, (800, 800))
 
                 draw_R = Draw()
                 draw_L = Draw()
 
-                transformed_img_R = draw_R.drawBoard(transformed_img_R, calData_R)
-                transformed_img_L = draw_L.drawBoard(transformed_img_L, calData_L)
+                transformed_img_R = draw_R.drawBoard(
+                    transformed_img_R, calData_R)
+                transformed_img_L = draw_L.drawBoard(
+                    transformed_img_L, calData_L)
 
                 cv2.imshow("Right Cam", transformed_img_R)
                 cv2.imshow("Left Cam", transformed_img_L)
@@ -412,19 +440,19 @@ def calibrate(cam_R, cam_L):
                 test = cv2.waitKey(0)
                 if test == 13:
                     cv2.destroyAllWindows()
-                    #we are good with the previous calibration data
+                    # we are good with the previous calibration data
                     calibrationComplete = True
                     return calData_R, calData_L
                 else:
                     cv2.destroyAllWindows()
                     calibrationComplete = True
-                    #delete the calibration file and start over
+                    # delete the calibration file and start over
                     os.remove("calibrationData_R.pkl")
                     os.remove("calibrationData_L.pkl")
-                    #restart calibration
+                    # restart calibration
                     calibrate(cam_R, cam_L)
 
-            #corrupted file
+            # corrupted file
             except EOFError as err:
                 print(err)
 
@@ -443,12 +471,14 @@ def calibrate(cam_R, cam_L):
             # top, bottom, left, right
             # 12/9, 2/15, 8/16, 13/4
             calData_R.dstpoints = [12, 2, 8, 18]
-            calData_R.transformation_matrix = manipulateTransformationPoints(imCal_R, calData_R)
+            calData_R.transformation_matrix = manipulateTransformationPoints(
+                imCal_R, calData_R)
 
             calData_L.points = getTransformationPoints(imCal_L, "left")
             # 12/9, 2/15, 8/16, 13/4
             calData_L.dstpoints = [12, 2, 8, 18]
-            calData_L.transformation_matrix = manipulateTransformationPoints(imCal_L, calData_L)
+            calData_L.transformation_matrix = manipulateTransformationPoints(
+                imCal_L, calData_L)
 
             cv2.destroyAllWindows()
 
@@ -461,7 +491,7 @@ def calibrate(cam_R, cam_L):
                 cv2.destroyWindow(winName4)
                 cv2.destroyAllWindows()
 
-            #write the calibration data to a file
+            # write the calibration data to a file
             calFile = open("calibrationData_R.pkl", "wb")
             pickle.dump(calData_R, calFile, 0)
             calFile.close()
@@ -474,14 +504,13 @@ def calibrate(cam_R, cam_L):
 
             return calData_R, calData_L
 
-
     cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
     print("Welcome to darts!")
 
-    cam_R = VideoStream(src=2).start()
-    cam_L = VideoStream(src=3).start()
+    cam_R = VideoStream(src=0).start()
+    cam_L = VideoStream(src=1).start()
 
     calibrate(cam_R, cam_L)

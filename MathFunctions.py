@@ -1,5 +1,3 @@
-__author__ = "Hannes Hoettinger"
-
 import math
 import pickle
 
@@ -10,13 +8,13 @@ DEBUG = True
 
 
 # distance point to line
-def dist(x1,y1, x2,y2, x3,y3): # x3,y3 is the point
+def dist(x1, y1, x2, y2, x3, y3):  # x3,y3 is the point
     px = x2-x1
     py = y2-y1
 
     something = px*px + py*py
 
-    u =  ((x3 - x1) * px + (y3 - y1) * py) / float(something)
+    u = ((x3 - x1) * px + (y3 - y1) * py) / float(something)
 
     if u > 1:
         u = 1
@@ -139,6 +137,8 @@ def segment_intersection(p1, p2, p3, p4):
     x4 = p4[0]
     y4 = p4[1]
     d = ((x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4))
-    px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d
-    py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d
+    px = ((x1 * y2 - y1 * x2) * (x3 - x4) -
+          (x1 - x2) * (x3 * y4 - y3 * x4)) / d
+    py = ((x1 * y2 - y1 * x2) * (y3 - y4) -
+          (y1 - y2) * (x3 * y4 - y3 * x4)) / d
     return px, py

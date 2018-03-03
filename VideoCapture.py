@@ -1,7 +1,5 @@
-__author__ = "Hannes Hoettinger"
-
-# import the necessary packages
 from threading import Thread
+
 import cv2
 
 # function call:
