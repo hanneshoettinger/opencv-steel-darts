@@ -12,6 +12,7 @@ from Classes import CalibrationData, EllipseDef
 from Draw import Draw
 from MathFunctions import intersectLineCircle, intersectLines
 from utils.ReferenceImages import loadReferenceImages
+from utils.ManipulateImages import *
 
 DEBUG = False
 
@@ -130,49 +131,30 @@ def manipulateTransformationPoints(imCal, calData):
     return transformation_matrix
 
 
-def autocanny(imCal):
-    # apply automatic Canny edge detection using the computed median
-    edged = cv2.Canny(imCal, 250, 255)
-
-    return edged
-
-
 def findEllipse(thresh2, image_proc_img):
 
     Ellipse = EllipseDef()
 
-    contours, _ = cv2.findContours(thresh2, 1, 2)
+    contours, _, _ = calibrateContours(thresh2, image_proc_img)
+    ellipse = calibrateEllipse(contours, image_proc_img)
 
-    minThresE = 200000/4
-    maxThresE = 1000000/4
+    if ellipse is not None:
+        x, y = ellipse[0]
+        a, b = ellipse[1]
+        angle = ellipse[2]
 
-    # contourArea threshold important -> make accessible
-    for cnt in contours:
-        try:  # threshold critical, change on demand?
-            if minThresE < cv2.contourArea(cnt) < maxThresE:
-                ellipse = cv2.fitEllipse(cnt)
-                cv2.ellipse(image_proc_img, ellipse, (0, 255, 0), 2)
+        a = a / 2
+        b = b / 2
 
-                x, y = ellipse[0]
-                a, b = ellipse[1]
-                angle = ellipse[2]
+        Ellipse.a = a
+        Ellipse.b = b
+        Ellipse.x = x
+        Ellipse.y = y
+        Ellipse.angle = angle
+        cv2.ellipse(image_proc_img, (int(x), int(y)), (int(a), int(b)),
+                    int(angle), 0.0, 360.0, (255, 0, 0))
 
-                a = a / 2
-                b = b / 2
-
-                cv2.ellipse(image_proc_img, (int(x), int(y)), (int(a), int(b)), int(angle), 0.0, 360.0,
-                            cv2.RGB(255, 0, 0))
-        # corrupted file
-        except:
-            print("error")
-            return Ellipse, image_proc_img
-
-    Ellipse.a = a
-    Ellipse.b = b
-    Ellipse.x = x
-    Ellipse.y = y
-    Ellipse.angle = angle
-    return Ellipse, image_proc_img
+    return Ellipse
 
 
 def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
@@ -182,7 +164,7 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
     counter = 0
 
     # fit line to find intersec point for dartboard center point
-    lines = cv2.HoughLines(edged, 1, np.pi / 80, 100, 100)
+    lines = calibrateHoughLines(edged, image_proc_img)
 
     # sector angles important -> make accessible
     for rho, theta in lines[0]:
@@ -204,7 +186,6 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
             for rho1, theta1 in lines[0]:
 
                 if theta1 > np.pi / 180 * angleZone2[0] and theta1 < np.pi / 180 * angleZone2[1]:
-
                     a = np.cos(theta1)
                     b = np.sin(theta1)
                     x0 = a * rho1
@@ -310,28 +291,13 @@ def getEllipseLineIntersection(Ellipse, M, lines_seg):
 
 def getTransformationPoints(image_proc_img, mount):
 
-    imCalHSV = cv2.cvtColor(image_proc_img, cv2.COLOR_BGR2HSV)
-    kernel = np.ones((5, 5), np.float32) / 25
-    blur = cv2.filter2D(imCalHSV, -1, kernel)
-    _, _, imCal = cv2.split(blur)
+    img_gray = cv2.cvtColor(image_proc_img, cv2.COLOR_RGBA2GRAY)
+    blurred = cv2.medianBlur(img_gray, 5)
+    thresh, _, _ = calibrateBinaryThresh(blurred)
+    thresh2, _, _ = calibrateMorph(thresh)
+    edged = calibrateCanny(thresh2)
 
-    # threshold important -> make accessible
-    # ret, thresh = cv2.threshold(imCal, 140, 255, cv2.THRESH_BINARY_INV)
-    _, thresh = cv2.threshold(
-        imCal, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-    # kernel size important -> make accessible
-    # very important -> removes lines outside the outer ellipse -> find ellipse
-    kernel = np.ones((5, 5), np.uint8)
-    thresh2 = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-    cv2.imshow("thresh2", thresh2)
-
-    # find enclosing ellipse
-    Ellipse, image_proc_img = findEllipse(thresh2, image_proc_img)
-
-    # return the edged image
-    edged = autocanny(thresh2)  # imCal
-    cv2.imshow("test", edged)
+    Ellipse = findEllipse(thresh2, image_proc_img)
 
     '''
     find 2 sector lines ->
@@ -347,8 +313,6 @@ def getTransformationPoints(image_proc_img, mount):
         lines_seg, image_proc_img = findSectorLines(
             edged, image_proc_img, angleZone1=(80, 120), angleZone2=(30, 40))
 
-    cv2.imshow("test4", image_proc_img)
-
     '''
     ellipse 2 circle transformation to find intersection points ->
     source points for transformation
@@ -358,6 +322,7 @@ def getTransformationPoints(image_proc_img, mount):
 
     source_points = []
 
+    '''
     try:
         new_intersect = np.mean(
             ([intersectp_s[0], intersectp_s[4]]), axis=0, dtype=np.float32)
@@ -394,7 +359,7 @@ def getTransformationPoints(image_proc_img, mount):
         source_points[2][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
     cv2.circle(image_proc_img, (int(source_points[3][0]), int(
         source_points[3][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-
+    '''
     winName2 = "th circles?"
     cv2.namedWindow(winName2, cv2.WINDOW_AUTOSIZE)
     cv2.imshow(winName2, image_proc_img)
@@ -522,4 +487,6 @@ def calibrate(img1, img2):
 if __name__ == '__main__':
     img1, img2 = loadReferenceImages()
 
+    img1 = cv2.rotate(img1, cv2.ROTATE_180)
+    img2 = cv2.rotate(img2, cv2.ROTATE_180)
     calibrate(img1, img2)
