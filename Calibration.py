@@ -11,7 +11,7 @@ import numpy as np
 from Classes import CalibrationData, EllipseDef
 from Draw import Draw
 from MathFunctions import intersectLineCircle, intersectLines
-from VideoCapture import VideoStream
+from utils.ReferenceImages import loadReferenceImages
 
 DEBUG = False
 
@@ -384,21 +384,10 @@ def getTransformationPoints(image_proc_img, mount):
         return source_points
 
 
-def calibrate(cam_R, cam_L):
+def calibrate(img1, img2):
 
-    try:
-        _, imCalRGB_R = cam_R.read()
-        _, imCalRGB_L = cam_L.read()
-
-    except:
-        print("Could not init cams")
-        return
-
-    imCal_R = imCalRGB_R.copy()
-    imCal_L = imCalRGB_L.copy()
-
-    cv2.imwrite("frame1_R.jpg", imCalRGB_R)     # save calibration frame
-    cv2.imwrite("frame1_L.jpg", imCalRGB_L)  # save calibration frame
+    imCal_R = img1.copy()
+    imCal_L = img2.copy()
 
     global calibrationComplete
     calibrationComplete = False
@@ -418,13 +407,13 @@ def calibrate(cam_R, cam_L):
                 calFile.close()
 
                 # copy image for old calibration data
-                transformed_img_R = imCalRGB_R.copy()
-                transformed_img_L = imCalRGB_L.copy()
+                transformed_img_R = img1.copy()
+                transformed_img_L = img2.copy()
 
                 transformed_img_R = cv2.warpPerspective(
-                    imCalRGB_R, calData_R.transformation_matrix, (800, 800))
+                    img1, calData_R.transformation_matrix, (800, 800))
                 transformed_img_L = cv2.warpPerspective(
-                    imCalRGB_L, calData_L.transformation_matrix, (800, 800))
+                    img2, calData_L.transformation_matrix, (800, 800))
 
                 draw_R = Draw()
                 draw_L = Draw()
@@ -450,7 +439,7 @@ def calibrate(cam_R, cam_L):
                     os.remove("calibrationData_R.pkl")
                     os.remove("calibrationData_L.pkl")
                     # restart calibration
-                    calibrate(cam_R, cam_L)
+                    calibrate(img1, img2)
 
             # corrupted file
             except EOFError as err:
@@ -462,8 +451,8 @@ def calibrate(cam_R, cam_L):
             calData_R = CalibrationData()
             calData_L = CalibrationData()
 
-            imCal_R = imCalRGB_R.copy()
-            imCal_L = imCalRGB_L.copy()
+            imCal_R = img1.copy()
+            imCal_L = img2.copy()
 
             calData_R.points = getTransformationPoints(imCal_R, "right")
             # 13/6: 0 | 6/10: 1 | 10/15: 2 | 15/2: 3 | 2/17: 4 | 17/3: 5 | 3/19: 6 | 19/7: 7 | 7/16: 8 | 16/8: 9 |
@@ -508,9 +497,6 @@ def calibrate(cam_R, cam_L):
 
 
 if __name__ == '__main__':
-    print("Welcome to darts!")
+    img1, img2 = loadReferenceImages()
 
-    cam_R = VideoStream(src=0).start()
-    cam_L = VideoStream(src=1).start()
-
-    calibrate(cam_R, cam_L)
+    calibrate(img1, img2)

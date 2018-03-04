@@ -2,10 +2,6 @@ from threading import Thread
 
 import cv2
 
-# function call:
-# vs = VideoStream(src=0).start()
-# frame = vs.read()
-
 
 class VideoStream:
     def __init__(self, src=0):
