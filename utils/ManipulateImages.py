@@ -55,7 +55,7 @@ def calibrateBinaryThresh(img):
 
     cv2.destroyWindow(win_name)
 
-    return im_copy, min, max
+    return im_copy
 
 
 def calibrateMorph(img):
@@ -82,47 +82,50 @@ def calibrateMorph(img):
         im_copy = cv2.morphologyEx(img, _MORPH_MODES[mode], kernel)
 
     cv2.destroyWindow(win_name)
-    return im_copy, kernel, _MORPH_MODES[mode]
+    return im_copy
 
 
 def calibrateContours(img, preview):
     win_name = 'calibrateContours'
-    preview_copy = preview.copy()
+
+    mode_value = 0
+    method_value = 0
 
     cv2.namedWindow(win_name)
     cv2.createTrackbar('mode', win_name,
-                       _RETR_MODES[1], len(_RETR_MODES), _noop)
+                       mode_value, len(_RETR_MODES) - 1, _noop)
     cv2.createTrackbar('method', win_name,
-                       _APPROX_MODES[2], len(_APPROX_MODES), _noop)
+                       method_value, len(_APPROX_MODES) - 1, _noop)
 
     while (1):
-        cv2.imshow(win_name, preview_copy)
+        preview_copy = preview.copy()
         kill = cv2.waitKey(1) & 0xFF
         if kill == 27 or kill == 13:
             break
 
-        mode = cv2.getTrackbarPos('mode', win_name)
-        method = cv2.getTrackbarPos('method', win_name)
+        mode_value = cv2.getTrackbarPos('mode', win_name)
+        method_value = cv2.getTrackbarPos('method', win_name)
 
-        _, contours, hierarchy = cv2.findContours(img, mode, method)
+        _, contours, hierarchy = cv2.findContours(img,
+                                                  _RETR_MODES[mode_value],
+                                                  _APPROX_MODES[method_value])
         cv2.drawContours(preview_copy, contours, -1, (255, 0, 0), 2)
+        cv2.imshow(win_name, preview_copy)
 
     cv2.destroyWindow(win_name)
-    return contours, hierarchy, preview_copy
+    return contours, hierarchy
 
 
 def _drawEllipseWithThreshhold(contours, min_thresh, max_thresh, img):
     ellipse = None
-    preview_copy = img.copy()
 
-    for idx, contour in enumerate(contours):
+    for contour in contours:
         area = cv2.contourArea(contour)
         if min_thresh < area < max_thresh:
             ellipse = cv2.fitEllipse(contour)
-            cv2.ellipse(preview_copy, ellipse, (0, 255, 0), 2)
-            cv2.drawContours(preview_copy, contours, idx, (255, 255, 255), 2)
+            img = cv2.ellipse(img, ellipse, (0, 255, 0), 2)
 
-    return ellipse, preview_copy
+    return ellipse, img
 
 
 def calibrateEllipse(contours, preview, min_thresh=25000):
@@ -132,7 +135,7 @@ def calibrateEllipse(contours, preview, min_thresh=25000):
                                   for c in contours]))) + min_thresh
     thresh_multiplier = 1000
     max_thresh_trackbar = int(np.rint(max_thresh / thresh_multiplier))
-    max_thresh_value = int(np.rint(max_thresh_trackbar / 2))
+    max_thresh_value = max_thresh_trackbar
     min_thresh_value = int(np.rint(min_thresh / thresh_multiplier))
 
     cv2.namedWindow(win_name)
@@ -142,7 +145,6 @@ def calibrateEllipse(contours, preview, min_thresh=25000):
                        max_thresh_value, max_thresh_trackbar, _noop)
 
     while (1):
-        cv2.imshow(win_name, preview_copy)
         kill = cv2.waitKey(1) & 0xFF
         if kill == 27 or kill == 13:
             break
@@ -159,7 +161,8 @@ def calibrateEllipse(contours, preview, min_thresh=25000):
             max_thresh = new_max_thresh_value * thresh_multiplier
             max_thresh_value = new_max_thresh_value
             ellipse, preview_copy = _drawEllipseWithThreshhold(
-                contours, min_thresh, max_thresh, preview)
+                contours, min_thresh, max_thresh, preview_copy)
+        cv2.imshow(win_name, preview_copy)
 
     cv2.destroyWindow(win_name)
     return ellipse
