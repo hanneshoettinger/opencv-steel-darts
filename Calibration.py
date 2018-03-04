@@ -22,7 +22,7 @@ winName4 = "Calibration?"
 winName5 = "Choose Ring"
 
 
-def nothing(x):
+def _noop(x):
     pass
 
 
@@ -38,7 +38,7 @@ def destinationPoint(i, calData):
     return dstpoint
 
 
-def transformation(imCalRGB, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
+def transformation(img, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
 
     points = calData.points
 
@@ -50,8 +50,7 @@ def transformation(imCalRGB, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
     newleft = destinationPoint(calData.dstpoints[2], calData)
     newright = destinationPoint(calData.dstpoints[3], calData)
 
-    # get a fresh new image
-    new_image = imCalRGB.copy()
+    im_copy = img.copy()
 
     # create transformation matrix
     src = np.array([(points[0][0]+tx1, points[0][1]+ty1),
@@ -59,68 +58,69 @@ def transformation(imCalRGB, calData, tx1, ty1, tx2, ty2, tx3, ty3, tx4, ty4):
                     (points[2][0]+tx3, points[2][1]+ty3),
                     (points[3][0]+tx4, points[3][1]+ty4)], np.float32)
     dst = np.array([newtop, newbottom, newleft, newright], np.float32)
+    print(src)
     transformation_matrix = cv2.getPerspectiveTransform(src, dst)
 
-    new_image = cv2.warpPerspective(
-        new_image, transformation_matrix, (800, 800))
+    im_copy = cv2.warpPerspective(im_copy, transformation_matrix, (800, 800))
 
     # draw image
     drawBoard = Draw()
-    new_image = drawBoard.drawBoard(new_image, calData)
+    im_copy = drawBoard.drawBoard(im_copy, calData)
 
-    cv2.circle(new_image, (int(newtop[0]), int(
-        newtop[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newbottom[0]), int(
-        newbottom[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newleft[0]), int(
-        newleft[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
-    cv2.circle(new_image, (int(newright[0]), int(
-        newright[1])), 2, cv2.RGB(255, 255, 0), 2, 4)
+    cv2.circle(im_copy, (int(newtop[0]), int(
+        newtop[1])), 2, (255, 255, 0), 2, 4)
+    cv2.circle(im_copy, (int(newbottom[0]), int(
+        newbottom[1])), 2, (255, 255, 0), 2, 4)
+    cv2.circle(im_copy, (int(newleft[0]), int(
+        newleft[1])), 2, (255, 255, 0), 2, 4)
+    cv2.circle(im_copy, (int(newright[0]), int(
+        newright[1])), 2, (255, 255, 0), 2, 4)
 
-    cv2.imshow('manipulation', new_image)
+    win_name = 'Warped'
+    cv2.namedWindow(win_name)
+    cv2.imshow(win_name, im_copy)
 
+    while (1):
+        kill = cv2.waitKey(1) & 0xFF
+        if kill == 27 or kill == 13:
+            break
+
+    cv2.destroyWindow(win_name)
     return transformation_matrix
 
 
 def manipulateTransformationPoints(imCal, calData):
+    win_name = 'calibration'
 
-    cv2.namedWindow('image', cv2.WINDOW_NORMAL)
+    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
-    cv2.createTrackbar('tx1', 'image', 0, 20, nothing)
-    cv2.createTrackbar('ty1', 'image', 0, 20, nothing)
-    cv2.createTrackbar('tx2', 'image', 0, 20, nothing)
-    cv2.createTrackbar('ty2', 'image', 0, 20, nothing)
-    cv2.createTrackbar('tx3', 'image', 0, 20, nothing)
-    cv2.createTrackbar('ty3', 'image', 0, 20, nothing)
-    cv2.createTrackbar('tx4', 'image', 0, 20, nothing)
-    cv2.createTrackbar('ty4', 'image', 0, 20, nothing)
-    cv2.setTrackbarPos('tx1', 'image', 10)
-    cv2.setTrackbarPos('ty1', 'image', 10)
-    cv2.setTrackbarPos('tx2', 'image', 10)
-    cv2.setTrackbarPos('ty2', 'image', 10)
-    cv2.setTrackbarPos('tx3', 'image', 10)
-    cv2.setTrackbarPos('ty3', 'image', 10)
-    cv2.setTrackbarPos('tx4', 'image', 10)
-    cv2.setTrackbarPos('ty4', 'image', 10)
+    cv2.createTrackbar('tx1', win_name, 10, 20, _noop)
+    cv2.createTrackbar('ty1', win_name, 10, 20, _noop)
+    cv2.createTrackbar('tx2', win_name, 10, 20, _noop)
+    cv2.createTrackbar('ty2', win_name, 10, 20, _noop)
+    cv2.createTrackbar('tx3', win_name, 10, 20, _noop)
+    cv2.createTrackbar('ty3', win_name, 10, 20, _noop)
+    cv2.createTrackbar('tx4', win_name, 10, 20, _noop)
+    cv2.createTrackbar('ty4', win_name, 10, 20, _noop)
     # create switch for ON/OFF functionality
     switch = '0 : OFF \n1 : ON'
-    cv2.createTrackbar(switch, 'image', 0, 1, nothing)
+    cv2.createTrackbar(switch, win_name, 0, 1, _noop)
     imCal_copy = imCal.copy()
     while (1):
-        cv2.imshow('image', imCal_copy)
+        cv2.imshow(win_name, imCal_copy)
         k = cv2.waitKey(1) & 0xFF
         if k == 27:
             break
         # get current positions of four trackbars
-        tx1 = cv2.getTrackbarPos('tx1', 'image') - 10
-        ty1 = cv2.getTrackbarPos('ty1', 'image') - 10
-        tx2 = cv2.getTrackbarPos('tx2', 'image') - 10
-        ty2 = cv2.getTrackbarPos('ty2', 'image') - 10
-        tx3 = cv2.getTrackbarPos('tx3', 'image') - 10
-        ty3 = cv2.getTrackbarPos('ty3', 'image') - 10
-        tx4 = cv2.getTrackbarPos('tx4', 'image') - 10
-        ty4 = cv2.getTrackbarPos('ty4', 'image') - 10
-        s = cv2.getTrackbarPos(switch, 'image')
+        tx1 = cv2.getTrackbarPos('tx1', win_name) - 10
+        ty1 = cv2.getTrackbarPos('ty1', win_name) - 10
+        tx2 = cv2.getTrackbarPos('tx2', win_name) - 10
+        ty2 = cv2.getTrackbarPos('ty2', win_name) - 10
+        tx3 = cv2.getTrackbarPos('tx3', win_name) - 10
+        ty3 = cv2.getTrackbarPos('ty3', win_name) - 10
+        tx4 = cv2.getTrackbarPos('tx4', win_name) - 10
+        ty4 = cv2.getTrackbarPos('ty4', win_name) - 10
+        s = cv2.getTrackbarPos(switch, win_name)
         if s == 0:
             imCal_copy[:] = 0
         else:
@@ -131,12 +131,12 @@ def manipulateTransformationPoints(imCal, calData):
     return transformation_matrix
 
 
-def findEllipse(thresh2, image_proc_img):
+def findEllipse(thresh2, img):
 
     Ellipse = EllipseDef()
 
-    contours, _, _ = calibrateContours(thresh2, image_proc_img)
-    ellipse = calibrateEllipse(contours, image_proc_img)
+    contours, _ = calibrateContours(thresh2, img)
+    ellipse = calibrateEllipse(contours, img)
 
     if ellipse is not None:
         x, y = ellipse[0]
@@ -151,49 +151,78 @@ def findEllipse(thresh2, image_proc_img):
         Ellipse.x = x
         Ellipse.y = y
         Ellipse.angle = angle
-        cv2.ellipse(image_proc_img, (int(x), int(y)), (int(a), int(b)),
-                    int(angle), 0.0, 360.0, (255, 0, 0))
 
     return Ellipse
 
 
-def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
-    p = []
-    intersectp = []
+def _get_line(theta, rho, width):
+    a = np.cos(theta)
+    b = np.sin(theta)
+    x0 = a * rho
+    y0 = b * rho
+    x1 = int(x0 + width * (-b))
+    y1 = int(y0 + width * (a))
+    x2 = int(x0 - width * (-b))
+    y2 = int(y0 - width * (a))
+
+    return (x1, y1), (x2, y2)
+
+
+def findSectorLines(edged, img):
+    win_name = 'findSectorLines'
+    angle_min = 0
+    angle_max = 180
+    angle_1_min = 0
+    angle_1_max = 180
+    angle_2_min = 0
+    angle_2_max = 180
+    line_width = max(img.shape)
     lines_seg = []
-    counter = 0
 
     # fit line to find intersec point for dartboard center point
-    lines = calibrateHoughLines(edged, image_proc_img)
+    lines = calibrateHoughLines(edged, img)
 
-    # sector angles important -> make accessible
-    for rho, theta in lines[0]:
-        '''
-        split between horizontal and vertical
-        lines (take only lines in certain range)
-        '''
-        if theta > np.pi / 180 * angleZone1[0] and theta < np.pi / 180 * angleZone1[1]:
+    cv2.namedWindow(win_name)
+    cv2.createTrackbar('1. angle1_MIN', win_name, angle_min, angle_max, _noop)
+    cv2.createTrackbar('2. angle1_MAX', win_name, angle_min, angle_max, _noop)
+    cv2.createTrackbar('3. angle2_MIN', win_name, angle_min, angle_max, _noop)
+    cv2.createTrackbar('4. angle2_MAX', win_name, angle_min, angle_max, _noop)
 
-            a = np.cos(theta)
-            b = np.sin(theta)
-            x0 = a * rho
-            y0 = b * rho
-            x1 = int(x0 + 2000 * (-b))
-            y1 = int(y0 + 2000 * (a))
-            x2 = int(x0 - 2000 * (-b))
-            y2 = int(y0 - 2000 * (a))
+    while (1):
+        kill = cv2.waitKey(1) & 0xFF
+        if kill == 27 or kill == 13:
+            break
+        preview_copy = img.copy()
+        angle_1_min = cv2.getTrackbarPos('1. angle1_MIN', win_name)
+        angle_1_max = cv2.getTrackbarPos('2. angle1_MAX', win_name)
+        angle_2_min = cv2.getTrackbarPos('3. angle2_MIN', win_name)
+        angle_2_max = cv2.getTrackbarPos('4. angle2_MAX', win_name)
 
-            for rho1, theta1 in lines[0]:
+        theta_1 = np.pi / 180 * angle_1_min
+        theta_2 = np.pi / 180 * angle_1_max
+        theta_3 = np.pi / 180 * angle_2_min
+        theta_4 = np.pi / 180 * angle_2_max
 
-                if theta1 > np.pi / 180 * angleZone2[0] and theta1 < np.pi / 180 * angleZone2[1]:
-                    a = np.cos(theta1)
-                    b = np.sin(theta1)
-                    x0 = a * rho1
-                    y0 = b * rho1
-                    x3 = int(x0 + 2000 * (-b))
-                    y3 = int(y0 + 2000 * (a))
-                    x4 = int(x0 - 2000 * (-b))
-                    y4 = int(y0 - 2000 * (a))
+        for line in lines:
+            for rho, theta in line:
+                if theta > theta_1 and theta < theta_2:
+                    line_1_start, line_1_end = _get_line(
+                        theta, rho, line_width)
+
+                    cv2.line(preview_copy, line_1_start,
+                             line_1_end, (255, 0, 0), 1)
+
+                if theta > theta_3 and theta < theta_4:
+                    line_2_start, line_2_end = _get_line(
+                        theta, rho, line_width)
+
+                    cv2.line(preview_copy, line_2_start,
+                             line_2_end, (255, 0, 0), 1)
+
+                    x1, y1 = line_1_start
+                    x2, y2 = line_1_end
+                    x3, y3 = line_2_start
+                    x4, y4 = line_2_end
 
                     if y1 == y2 and y3 == y4:  # Horizontal Lines
                         diff = abs(y1 - y3)
@@ -205,40 +234,26 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
                     if diff < 200 and diff is not 0:
                         continue
 
-                    cv2.line(image_proc_img, (x1, y1),
-                             (x2, y2), (255, 0, 0), 1)
-                    cv2.line(image_proc_img, (x3, y3),
-                             (x4, y4), (255, 0, 0), 1)
-
-                    p.append((x1, y1))
-                    p.append((x2, y2))
-                    p.append((x3, y3))
-                    p.append((x4, y4))
-
-                    intersectpx, intersectpy = intersectLines(p[counter],
-                                                              p[counter + 1],
-                                                              p[counter + 2],
-                                                              p[counter + 3])
+                    intersectpx, intersectpy = intersectLines(line_1_start,
+                                                              line_1_end,
+                                                              line_2_start,
+                                                              line_2_end)
 
                     # consider only intersection close to
                     # the center of the image
-                    if intersectpx < 200 or intersectpx > 900 or intersectpy < 200 or intersectpy > 900:
+                    px_out_of_range = intersectpx < 200 or intersectpx > 900
+                    py_out_of_range = intersectpy < 200 or intersectpy > 900
+
+                    if px_out_of_range or py_out_of_range:
                         continue
 
-                    intersectp.append((intersectpx, intersectpy))
+                    lines_seg[0] = [line_1_start, line_1_end]
+                    lines_seg[1] = [line_2_start, line_2_end]
 
-                    lines_seg.append([(x1, y1), (x2, y2)])
-                    lines_seg.append([(x3, y3), (x4, y4)])
+        cv2.imshow(win_name, preview_copy)
 
-                    cv2.line(image_proc_img, (x1, y1),
-                             (x2, y2), (255, 0, 0), 1)
-                    cv2.line(image_proc_img, (x3, y3),
-                             (x4, y4), (255, 0, 0), 1)
-
-                    # point offset
-                    counter = counter + 4
-
-    return lines_seg, image_proc_img
+    cv2.destroyWindow(win_name)
+    return lines_seg
 
 
 def ellipse2circle(Ellipse):
@@ -289,29 +304,22 @@ def getEllipseLineIntersection(Ellipse, M, lines_seg):
     return intersectp_s
 
 
-def getTransformationPoints(image_proc_img, mount):
+def getTransformationPoints(img, mount):
 
-    img_gray = cv2.cvtColor(image_proc_img, cv2.COLOR_RGBA2GRAY)
+    img_gray = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
     blurred = cv2.medianBlur(img_gray, 5)
-    thresh, _, _ = calibrateBinaryThresh(blurred)
-    thresh2, _, _ = calibrateMorph(thresh)
+    thresh = calibrateBinaryThresh(blurred)
+    thresh2 = calibrateMorph(thresh)
     edged = calibrateCanny(thresh2)
 
-    Ellipse = findEllipse(thresh2, image_proc_img)
+    Ellipse = findEllipse(thresh2, img)
 
     '''
     find 2 sector lines ->
     horizontal and vertical sector line ->
     make angles accessible? with slider?
     '''
-    if mount == "right":
-        angleZone1 = (Ellipse.angle - 5, Ellipse.angle + 5)
-        angleZone2 = (Ellipse.angle - 100, Ellipse.angle - 80)
-        lines_seg, image_proc_img = findSectorLines(
-            edged, image_proc_img, angleZone1, angleZone2)
-    else:
-        lines_seg, image_proc_img = findSectorLines(
-            edged, image_proc_img, angleZone1=(80, 120), angleZone2=(30, 40))
+    lines_seg = findSectorLines(edged, img)
 
     '''
     ellipse 2 circle transformation to find intersection points ->
@@ -322,7 +330,6 @@ def getTransformationPoints(image_proc_img, mount):
 
     source_points = []
 
-    '''
     try:
         new_intersect = np.mean(
             ([intersectp_s[0], intersectp_s[4]]), axis=0, dtype=np.float32)
@@ -351,23 +358,26 @@ def getTransformationPoints(image_proc_img, mount):
         source_points.append(intersectp_s[left_idx])  # left
         source_points.append(intersectp_s[right_idx])  # right
 
-    cv2.circle(image_proc_img, (int(source_points[0][0]), int(
-        source_points[0][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[1][0]), int(
-        source_points[1][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[2][0]), int(
-        source_points[2][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    cv2.circle(image_proc_img, (int(source_points[3][0]), int(
-        source_points[3][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
-    '''
-    winName2 = "th circles?"
-    cv2.namedWindow(winName2, cv2.WINDOW_AUTOSIZE)
-    cv2.imshow(winName2, image_proc_img)
+    circles_img = img.copy()
+    cv2.circle(circles_img, (int(source_points[0][0]), int(
+        source_points[0][1])), 3, (255, 0, 0), 2, 8)
+    cv2.circle(circles_img, (int(source_points[1][0]), int(
+        source_points[1][1])), 3, (255, 0, 0), 2, 8)
+    cv2.circle(circles_img, (int(source_points[2][0]), int(
+        source_points[2][1])), 3, (255, 0, 0), 2, 8)
+    cv2.circle(circles_img, (int(source_points[3][0]), int(
+        source_points[3][1])), 3, (255, 0, 0), 2, 8)
 
-    end = cv2.waitKey(0)
-    if end == 13:
-        cv2.destroyAllWindows()
-        return source_points
+    cv2.namedWindow('Circles')
+    cv2.imshow('Circles', circles_img)
+
+    while (1):
+        kill = cv2.waitKey(1) & 0xFF
+        if kill == 27 or kill == 13:
+            break
+
+    cv2.destroyWindow('Circles')
+    return source_points
 
 
 def calibrate(img1, img2):
@@ -437,19 +447,16 @@ def calibrate(img1, img2):
             calData_R = CalibrationData()
             calData_L = CalibrationData()
 
-            imCal_R = img1.copy()
-            imCal_L = img2.copy()
-
-            calData_R.points = getTransformationPoints(imCal_R, "right")
+            calData_R.points = getTransformationPoints(imCal_R, 'left')
             # 13/6: 0 | 6/10: 1 | 10/15: 2 | 15/2: 3 | 2/17: 4 |
             # 17/3: 5 | 3/19: 6 | 19/7: 7 | 7/16: 8 | 16/8: 9 |
             # 8/11: 10 | 11/14: 11 | 14/9: 12 | 9/12: 13 | 12/5: 14 |
             # 5/20: 15 | 20/1: 16 | 1/18: 17 | 18/4: 18 | 4/13: 19
             # top, bottom, left, right
             # 12/9, 2/15, 8/16, 13/4
-            calData_R.dstpoints = [12, 2, 8, 18]
+            calData_R.dstpoints = [13, 3, 8, 17]
             calData_R.transformation_matrix = manipulateTransformationPoints(
-                imCal_R, calData_R)
+                img1, calData_R)
 
             calData_L.points = getTransformationPoints(imCal_L, "left")
             # 12/9, 2/15, 8/16, 13/4
