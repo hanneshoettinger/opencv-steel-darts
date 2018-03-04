@@ -26,8 +26,13 @@ def nothing(x):
 
 
 def destinationPoint(i, calData):
-    dstpoint = [(calData.center_dartboard[0] + calData.ring_radius[5] * math.cos((0.5 + i) * calData.sectorangle)),
-                (calData.center_dartboard[1] + calData.ring_radius[5] * math.sin((0.5 + i) * calData.sectorangle))]
+    dstpoint_cos = math.cos((0.5 + i) * calData.sectorangle)
+    dstpoint_sin = math.sin((0.5 + i) * calData.sectorangle)
+    dstpoint_0 = calData.center_dartboard[0] + calData.ring_radius[5]
+    dstpoint_1 = calData.center_dartboard[1] + calData.ring_radius[5]
+
+    dstpoint = [(dstpoint_0 * dstpoint_cos),
+                (dstpoint_1 * dstpoint_sin)]
 
     return dstpoint
 
@@ -181,7 +186,10 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
 
     # sector angles important -> make accessible
     for rho, theta in lines[0]:
-        # split between horizontal and vertical lines (take only lines in certain range)
+        '''
+        split between horizontal and vertical
+        lines (take only lines in certain range)
+        '''
         if theta > np.pi / 180 * angleZone1[0] and theta < np.pi / 180 * angleZone1[1]:
 
             a = np.cos(theta)
@@ -226,10 +234,13 @@ def findSectorLines(edged, image_proc_img, angleZone1, angleZone2):
                     p.append((x3, y3))
                     p.append((x4, y4))
 
-                    intersectpx, intersectpy = intersectLines(p[counter], p[counter + 1], p[counter + 2],
+                    intersectpx, intersectpy = intersectLines(p[counter],
+                                                              p[counter + 1],
+                                                              p[counter + 2],
                                                               p[counter + 3])
 
-                    # consider only intersection close to the center of the image
+                    # consider only intersection close to
+                    # the center of the image
                     if intersectpx < 200 or intersectpx > 900 or intersectpy < 200 or intersectpy > 900:
                         continue
 
@@ -256,7 +267,9 @@ def ellipse2circle(Ellipse):
     a = Ellipse.a
     b = Ellipse.b
 
-    # build transformation matrix http://math.stackexchange.com/questions/619037/circle-affine-transformation
+    '''build transformation matrix
+    http://math.stackexchange.com/questions/619037/circle-affine-transformation
+    '''
     R1 = np.array([[math.cos(angle), math.sin(angle), 0],
                    [-math.sin(angle), math.cos(angle), 0], [0, 0, 1]])
     R2 = np.array([[math.cos(angle), -math.sin(angle), 0],
@@ -277,7 +290,8 @@ def getEllipseLineIntersection(Ellipse, M, lines_seg):
     circle_radius = Ellipse.a
     M_inv = np.linalg.inv(M)
 
-    # find line circle intersection and use inverse transformation matrix to transform it back to the ellipse
+    # find line circle intersection and use inverse transformation
+    # matrix to transform it back to the ellipse
     intersectp_s = []
     for lin in lines_seg:
         line_p1 = M.dot(np.transpose(np.hstack([lin[0], 1])))
@@ -319,7 +333,11 @@ def getTransformationPoints(image_proc_img, mount):
     edged = autocanny(thresh2)  # imCal
     cv2.imshow("test", edged)
 
-    # find 2 sector lines -> horizontal and vertical sector line -> make angles accessible? with slider?
+    '''
+    find 2 sector lines ->
+    horizontal and vertical sector line ->
+    make angles accessible? with slider?
+    '''
     if mount == "right":
         angleZone1 = (Ellipse.angle - 5, Ellipse.angle + 5)
         angleZone2 = (Ellipse.angle - 100, Ellipse.angle - 80)
@@ -331,7 +349,10 @@ def getTransformationPoints(image_proc_img, mount):
 
     cv2.imshow("test4", image_proc_img)
 
-    # ellipse 2 circle transformation to find intersection points -> source points for transformation
+    '''
+    ellipse 2 circle transformation to find intersection points ->
+    source points for transformation
+    '''
     M = ellipse2circle(Ellipse)
     intersectp_s = getEllipseLineIntersection(Ellipse, M, lines_seg)
 
@@ -375,7 +396,7 @@ def getTransformationPoints(image_proc_img, mount):
         source_points[3][1])), 3, cv2.RGB(255, 0, 0), 2, 8)
 
     winName2 = "th circles?"
-    cv2.namedWindow(winName2, cv2.CV_WINDOW_AUTOSIZE)
+    cv2.namedWindow(winName2, cv2.WINDOW_AUTOSIZE)
     cv2.imshow(winName2, image_proc_img)
 
     end = cv2.waitKey(0)
@@ -392,7 +413,7 @@ def calibrate(img1, img2):
     global calibrationComplete
     calibrationComplete = False
 
-    while calibrationComplete == False:
+    while calibrationComplete is False:
         # Read calibration file, if exists
         if os.path.isfile("calibrationData_R.pkl"):
             try:
@@ -455,8 +476,10 @@ def calibrate(img1, img2):
             imCal_L = img2.copy()
 
             calData_R.points = getTransformationPoints(imCal_R, "right")
-            # 13/6: 0 | 6/10: 1 | 10/15: 2 | 15/2: 3 | 2/17: 4 | 17/3: 5 | 3/19: 6 | 19/7: 7 | 7/16: 8 | 16/8: 9 |
-            # 8/11: 10 | 11/14: 11 | 14/9: 12 | 9/12: 13 | 12/5: 14 | 5/20: 15 | 20/1: 16 | 1/18: 17 | 18/4: 18 | 4/13: 19
+            # 13/6: 0 | 6/10: 1 | 10/15: 2 | 15/2: 3 | 2/17: 4 |
+            # 17/3: 5 | 3/19: 6 | 19/7: 7 | 7/16: 8 | 16/8: 9 |
+            # 8/11: 10 | 11/14: 11 | 14/9: 12 | 9/12: 13 | 12/5: 14 |
+            # 5/20: 15 | 20/1: 16 | 1/18: 17 | 18/4: 18 | 4/13: 19
             # top, bottom, left, right
             # 12/9, 2/15, 8/16, 13/4
             calData_R.dstpoints = [12, 2, 8, 18]
