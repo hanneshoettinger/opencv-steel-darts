@@ -12,5 +12,6 @@ pylint==1.8.2
 pyparsing==2.2.0
 python-dateutil==2.6.1
 pytz==2018.3
+rope==0.10.7
 six==1.11.0
 wrapt==1.10.11
