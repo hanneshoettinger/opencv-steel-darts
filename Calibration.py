@@ -55,7 +55,10 @@ def _get_live_feed():
         _, img_r = cam_r.read()
     except:
         print('Could not init cams')
-        return
+        raise
+    finally:
+        cam_l.stop()
+        cam_r.stop()
 
     return img_l, img_r
 
