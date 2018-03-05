@@ -29,8 +29,8 @@ def show_corrected_live_stream():
             cv2.destroyAllWindows()
             break
 
-        img_l = cam_l.read()
-        img_r = cam_r.read()
+        _, img_l = cam_l.read()
+        _, img_r = cam_r.read()
 
         matrix_l = cv2.getPerspectiveTransform(src_points_l, dst_points)
         matrix_r = cv2.getPerspectiveTransform(src_points_r, dst_points)
@@ -47,6 +47,8 @@ def kickoff():
     global cal_data_r
 
     cal_data_l, cal_data_r = calibrate()
+
+    show_corrected_live_stream()
 
 if __name__ == '__main__':
     kickoff()
