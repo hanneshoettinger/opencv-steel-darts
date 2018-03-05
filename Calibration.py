@@ -1,9 +1,7 @@
 import math
-import os.path
+import os
 import pickle
 import sys
-import time
-from threading import Event, Thread
 
 import cv2  # open cv2
 import numpy as np
@@ -11,6 +9,7 @@ import numpy as np
 from Classes import CalibrationData, EllipseDef
 from Draw import Draw
 from utils.ReferenceImages import loadReferenceImages
+from utils.VideoCapture import VideoStream
 
 dst_points = [(161, 157), (641, 157), (160, 640), (641, 642)]
 
@@ -45,6 +44,20 @@ def _get_sec_sin(sector_angle, i):
 
 def _get_sec_cos(sector_angle, i):
     return math.cos((0.5 + i) * sector_angle)
+
+
+def _get_live_feed():
+    cam_l = VideoStream(src=0).start()
+    cam_r = VideoStream(src=1).start()
+
+    try:
+        _, img_l = cam_l.read()
+        _, img_r = cam_r.read()
+    except:
+        print('Could not init cams')
+        return
+
+    return img_l, img_r
 
 
 def getTransformPoints(img, cal_data):
@@ -103,38 +116,56 @@ def getTransformPoints(img, cal_data):
     return points_copy, im_copy
 
 
-def calibrate(img_l, img_r):
+def calibrate(img_l=None, img_r=None):
+    cal_l_path = './calibration_data/cal_l.pkl'
+    cal_r_path = './calibration_data/cal_r.pkl'
 
-    cal_data = CalibrationData()
+    cal_l_exists = os.path.isfile(cal_l_path)
+    cal_r_exists = os.path.isfile(cal_r_path)
 
-    im_copy1 = img_l.copy()
-    im_copy2 = img_r.copy()
+    cal_data_l = CalibrationData()
+    cal_data_r = CalibrationData()
 
-    data, im_transformed = getTransformPoints(im_copy2, cal_data)
-    print(data)
+    if cal_l_exists and cal_r_exists:
+        calibration_file_l = open(cal_l_path, 'rb')
+        calibration_file_r = open(cal_r_path, 'rb')
 
-    global calibrationComplete
-    calibrationComplete = False
+        cal_data_l = pickle.load(calibration_file_l)
+        cal_data_r = pickle.load(calibration_file_r)
 
-    board = Draw()
+        calibration_file_l.close()
+        calibration_file_r.close()
+    else:
 
-    cv2.namedWindow('board')
+        if img_l is None or img_r is None:
+            img_l, img_r = _get_live_feed()
 
-    im_transformed = board.drawBoard(im_transformed, cal_data)
-    cv2.imshow('board', im_transformed)
-    cv2.imshow('org', im_copy1)
+        im_copy_l = img_l.copy()
+        im_copy_r = img_r.copy()
 
-    while (1):
-        kill = cv2.waitKey(1) & 0xFF
-        if kill == 27 or kill == 13:
-            break
+        tranform_data_l, im_transformed_l = getTransformPoints(
+            im_copy_l, cal_data_l)
+        tranform_data_r, im_transformed_r = getTransformPoints(
+            im_copy_r, cal_data_r)
 
-    cv2.destroyAllWindows()
+        cal_data_l.points = calculate_dst((400, 400))
+        cal_data_l.transformation_matrix = tranform_data_l
+        calibration_file_l = open(cal_l_path, 'wb')
+        pickle.dump(cal_data_l, calibration_file_l, 0)
+        calibration_file_l.close()
+
+        cal_data_r.points = calculate_dst((400, 400))
+        cal_data_r.transformation_matrix = tranform_data_r
+        calibration_file_r = open(cal_r_path, 'wb')
+        pickle.dump(cal_data_r, calibration_file_r, 0)
+        calibration_file_r.close()
+
+    return cal_data_l, cal_data_r
 
 
 if __name__ == '__main__':
-    img_r, img_r = loadReferenceImages()
+    img_l = None
+    img_r = None
+    # img_l, img_r = loadReferenceImages()
 
-    img_r = cv2.rotate(img_r, cv2.ROTATE_180)
-    img_r = cv2.rotate(img_r, cv2.ROTATE_180)
-    calibrate(img_r, img_r)
+    calibrate(img_l, img_r)
