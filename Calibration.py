@@ -3,7 +3,7 @@ import os
 import pickle
 import sys
 
-import cv2  # open cv2
+import cv2
 import numpy as np
 
 from Classes import CalibrationData, EllipseDef
@@ -11,12 +11,15 @@ from Draw import Draw
 from utils.ReferenceImages import loadReferenceImages
 from utils.VideoCapture import VideoStream
 
+cal_l_path = './calibration_data/cal_l.pkl'
+cal_r_path = './calibration_data/cal_r.pkl'
+
 
 def _noop(x):
     pass
 
 
-def calculate_dst(center, radius=340):
+def _calculate_dst(center, radius=340):
     sector_angle = 2 * math.pi / 20
 
     i = 12  # 9/12 intersection
@@ -61,12 +64,12 @@ def _get_live_feed():
     return img_l, img_r
 
 
-def getTransformPoints(img, cal_data):
+def _getTransformPoints(img, cal_data):
     win1_name = 'Calibration'
     win2_name = 'Preview'
     board = Draw()
     im_copy = img.copy()
-    dst_points = calculate_dst((400, 400))
+    dst_points = _calculate_dst((400, 400))
     src_points = [[0, 0], [0, 0], [0, 0], [0, 0]]
     position = 0
 
@@ -117,10 +120,37 @@ def getTransformPoints(img, cal_data):
     return points_copy, im_copy
 
 
-def calibrate(img_l=None, img_r=None):
-    cal_l_path = './calibration_data/cal_l.pkl'
-    cal_r_path = './calibration_data/cal_r.pkl'
+def _calibrate(img_l=None, img_r=None):
+    cal_data_l = CalibrationData()
+    cal_data_r = CalibrationData()
 
+    if img_l is None or img_r is None:
+        img_l, img_r = _get_live_feed()
+
+    im_copy_l = img_l.copy()
+    im_copy_r = img_r.copy()
+
+    tranform_data_l, _ = _getTransformPoints(
+        im_copy_l, cal_data_l)
+    tranform_data_r, _ = _getTransformPoints(
+        im_copy_r, cal_data_r)
+
+    cal_data_l.points = _calculate_dst((400, 400))
+    cal_data_l.transformation_matrix = tranform_data_l
+    calibration_file_l = open(cal_l_path, 'wb')
+    pickle.dump(cal_data_l, calibration_file_l, 0)
+    calibration_file_l.close()
+
+    cal_data_r.points = _calculate_dst((400, 400))
+    cal_data_r.transformation_matrix = tranform_data_r
+    calibration_file_r = open(cal_r_path, 'wb')
+    pickle.dump(cal_data_r, calibration_file_r, 0)
+    calibration_file_r.close()
+
+    return cal_data_l, cal_data_r
+
+
+def getCalibrationData():
     cal_l_exists = os.path.isfile(cal_l_path)
     cal_r_exists = os.path.isfile(cal_r_path)
 
@@ -137,36 +167,13 @@ def calibrate(img_l=None, img_r=None):
         calibration_file_l.close()
         calibration_file_r.close()
     else:
-
-        if img_l is None or img_r is None:
-            img_l, img_r = _get_live_feed()
-
-        im_copy_l = img_l.copy()
-        im_copy_r = img_r.copy()
-
-        tranform_data_l, im_transformed_l = getTransformPoints(
-            im_copy_l, cal_data_l)
-        tranform_data_r, im_transformed_r = getTransformPoints(
-            im_copy_r, cal_data_r)
-
-        cal_data_l.points = calculate_dst((400, 400))
-        cal_data_l.transformation_matrix = tranform_data_l
-        calibration_file_l = open(cal_l_path, 'wb')
-        pickle.dump(cal_data_l, calibration_file_l, 0)
-        calibration_file_l.close()
-
-        cal_data_r.points = calculate_dst((400, 400))
-        cal_data_r.transformation_matrix = tranform_data_r
-        calibration_file_r = open(cal_r_path, 'wb')
-        pickle.dump(cal_data_r, calibration_file_r, 0)
-        calibration_file_r.close()
+        cal_data_l, cal_data_r = _calibrate()
 
     return cal_data_l, cal_data_r
-
 
 if __name__ == '__main__':
     img_l = None
     img_r = None
     # img_l, img_r = loadReferenceImages()
 
-    calibrate(img_l, img_r)
+    _calibrate(img_l, img_r)

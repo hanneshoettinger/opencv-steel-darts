@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from Calibration import calibrate
+from Calibration import getCalibrationData
 from utils.VideoCapture import VideoStream
 
 cal_data_l = None
@@ -46,7 +46,7 @@ def kickoff():
     global cal_data_l
     global cal_data_r
 
-    cal_data_l, cal_data_r = calibrate()
+    cal_data_l, cal_data_r = getCalibrationData()
 
     show_corrected_live_stream()
 
