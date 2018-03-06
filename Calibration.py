@@ -11,8 +11,6 @@ from Draw import Draw
 from utils.ReferenceImages import loadReferenceImages
 from utils.VideoCapture import VideoStream
 
-dst_points = [(161, 157), (641, 157), (160, 640), (641, 642)]
-
 
 def _noop(x):
     pass
