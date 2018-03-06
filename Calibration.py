@@ -171,6 +171,7 @@ def getCalibrationData():
 
     return cal_data_l, cal_data_r
 
+
 if __name__ == '__main__':
     img_l = None
     img_r = None
