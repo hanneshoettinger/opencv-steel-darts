@@ -21,6 +21,7 @@ def show_corrected_live_stream():
     cv2.namedWindow(win_name_l)
     cv2.namedWindow(win_name_r)
 
+    fgbg = cv2.createBackgroundSubtractorMOG2()
     while (1):
         kill = cv2.waitKey(1) & 0xFF
         if kill == 13 or kill == 27:
@@ -37,6 +38,8 @@ def show_corrected_live_stream():
 
         im_copy_l = cv2.warpPerspective(img_l, matrix_l, (800, 800))
         im_copy_r = cv2.warpPerspective(img_r, matrix_r, (800, 800))
+
+        im_copy_l = fgbg.apply(im_copy_l)
 
         cv2.imshow(win_name_l, im_copy_l)
         cv2.imshow(win_name_r, im_copy_r)
