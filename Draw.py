@@ -28,11 +28,13 @@ class Draw:
         cv2.circle(img, (400, 400), calData.ring_radius[5], (255, 255, 255), 1)
 
         i = 0
+
         while (i < 20):
-            cv2.line(img, (400, 400), (
-                int(400 + calData.ring_radius[5] *
-                    math.cos((0.5 + i) * self.sectorangle)),
-                int(400 + calData.ring_radius[5] * math.sin((0.5 + i) * self.sectorangle))), (255, 255, 255), 1)
+            dst_cos = math.cos((0.5 + i) * self.sectorangle)
+            dst_sin = math.sin((0.5 + i) * self.sectorangle)
+            x = int(400 + calData.ring_radius[5] * dst_cos)
+            y = int(400 + calData.ring_radius[5] * dst_sin)
+            cv2.line(img, (400, 400), (x, y), (255, 255, 255), 1)
             i = i + 1
 
         return img
