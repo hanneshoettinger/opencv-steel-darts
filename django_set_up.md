@@ -84,4 +84,7 @@ darts games
     1 row in set (0.00 sec)
     ```
 * use `python manage.py createsuperuser` and follow the instructions to add a
-`superuser` to administer the django instance from the web-ui (create/modify users) 
+`superuser` to administer the django instance from the web-ui (create/modify users)
+
+## Starting and running the darts ui:
+
