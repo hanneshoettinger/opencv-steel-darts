@@ -85,6 +85,12 @@ darts games
     ```
 * use `python manage.py createsuperuser` and follow the instructions to add a
 `superuser` to administer the django instance from the web-ui (create/modify users)
+* We're also using OpenCV for image recognition. Follow the following to get a compiled cv2 linked
+intointo your `virtualenv`:
+    ```bash
+    name@Comp:~/.virtualenvs/darts/lib/python3.5/site-packages
+    $ ln -s /usr/local/lib/python3.6/site-packages/cv2.so cv2.so
+    ```
 
 ## Starting and running the darts ui:
 
