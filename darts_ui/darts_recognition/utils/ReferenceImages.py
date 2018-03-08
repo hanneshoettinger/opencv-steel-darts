@@ -2,7 +2,7 @@ from os import path
 
 import cv2
 
-from utils.VideoCapture import VideoStream
+from .VideoCapture import VideoStream
 
 current_path = path.abspath(path.dirname(__file__))
 img_path = path.abspath(path.join(current_path, '../test_images'))
