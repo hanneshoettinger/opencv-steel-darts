@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import StartDartsRecognition
+from .models import DartsRecognitionStatus
 # Register your models here.
 
-admin.site.register(StartDartsRecognition)
+admin.site.register(DartsRecognitionStatus)
