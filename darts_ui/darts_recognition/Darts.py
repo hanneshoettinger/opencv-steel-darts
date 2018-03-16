@@ -1,7 +1,7 @@
 import cv2
 import numpy as numpy
 
-from .utils.ReferenceImages import loadReferenceImages, loadReferenceImagesWithDarts
+from darts_ui.darts_recognition.utils.ReferenceImages import loadReferenceImages, loadReferenceImagesWithDarts
 
 
 def _findDarts(img1, img2):

@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-from .Calibration import getCalibrationData
-from .utils.VideoCapture import VideoStream
+from darts_ui.darts_recognition.Calibration import getCalibrationData
+from darts_ui.darts_recognition.utils.VideoCapture import VideoStream
 
 cal_data_l = None
 cal_data_r = None
