@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.db import models
-from .darts_recognition.Start import kickoff
+from darts_ui.darts_recognition.Start import kickoff, return_status
 # Create your models here.
 
 
@@ -9,11 +9,12 @@ class DartsRecognitionStatus(models.Model):
     since = models.DateTimeField('date started')
 
     def __str__(self):
-        current = self.objects.get(pk=1)
-        if current.is_running:
-            return "Status: {} since {}".format(current.is_running, current.since)
-        else:
-            return "{}".format(current.is_running)
+        return "{}, {}".format(self.is_running, self.since)
+        #
+        # if current.is_running:
+        #     return "Status: {} since {}".format(current.is_running, current.since)
+        # else:
+        #     return "{}".format(current.is_running)
 
     # TODO: Create methods to start and stop the dart recognition
     # def start_recognition(self):
@@ -42,4 +43,10 @@ class DartsRecognitionStatus(models.Model):
     #         return "Recognition turned off since {}.".format(self.since)
 
     def current_status(self):
-        return self.objects.get(pk=1).is_running
+        return self.objects.last().is_running
+
+    def running_since(self):
+        return self.objects.last().since
+
+    def start_recognition(self):
+        return return_status()

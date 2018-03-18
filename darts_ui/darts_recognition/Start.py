@@ -53,5 +53,10 @@ def kickoff():
 
     show_corrected_live_stream()
 
+
+# This is only to see if a button can be made to start the darts recogntion
+def return_status():
+    return True
+
 if __name__ == '__main__':
     kickoff()
