@@ -93,3 +93,14 @@ intointo your `virtualenv`:
     ```
 
 ## Starting and running the darts ui:
+
+To start the Django darts ui, change into the project folder (`opencv-steel-darts`).
+You'll find the `manage.py` script which can start Django and serve the UI. It comes
+with a few other tools also, but that is all described in the Django Docu.
+
+Run the `manage.py` script:
+
+```python
+# python manage.py runserver [[ip:]port]
+python manage.py runserver 9000
+```
