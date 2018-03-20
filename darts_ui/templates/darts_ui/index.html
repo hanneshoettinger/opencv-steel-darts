@@ -1,0 +1,25 @@
+
+<h1>Orca Automatic Dart Scoring System</h1>
+
+<h3>Current Darts Cam Status:</h3>
+{#<p>{%  %}</p>#}
+
+
+<table>
+    <tr>
+        <td>{% if status %}<strong>RUNNING</strong>{% else %}<strong>NOT RUNNING</strong>{% endif %}</td>
+        <td>since {{ since }}</td>
+    </tr>
+</table>
+
+
+<br>
+<br>
+
+{#TODO: Add button to start the darts cam#}
+
+
+<form action="#" method="post">
+{%  csrf_token %}
+    <input type="submit" class="btn" value="{% if status %}Stop{% else %}Start{% endif %}" name="{% if status %}stop{% else %}start{% endif %}">
+</form>
