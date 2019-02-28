@@ -1,8 +1,8 @@
 # Changelog
-* 2019-02-28 - Patrick Hener
- * Migrated to Python3
- * Removed dependency opencv (v1) so you can use current opencv implementation. Testted version is opencv 4.0.0
- * Quick cleanup: Moved not used code to folder archived 
+## 2019-02-28 - Patrick Hener
+* Migrated to Python3
+* Removed dependency opencv (v1) so you can use current opencv implementation. Testted version is opencv 4.0.0
+* Quick cleanup: Moved not used code to folder archived 
 
 
 # opencv-steel-darts
