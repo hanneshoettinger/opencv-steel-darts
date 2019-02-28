@@ -148,7 +148,7 @@ player = Player()
 back_gnd = Canvas(root)
 back_gnd.pack(expand=True, fill='both')
 
-back_gnd_image = PhotoImage(file="C:\Users\hanne\OneDrive\Projekte\GitHub\darts\Dartboard.gif")
+back_gnd_image = PhotoImage(file="Dartboard.gif")
 back_gnd.create_image(0, 0, anchor='nw', image=back_gnd_image)
 
 # Create Buttons
