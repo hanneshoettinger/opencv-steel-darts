@@ -22,12 +22,12 @@ def getTransformedLocation(x_coord,y_coord, calData):
 
     #system not calibrated
     except AttributeError as err1:
-        print err1
+        print (err1)
         return (-1, -1)
 
     except NameError as err2:
         #not calibrated error
-        print err2
+        print (err2)
         return (-2, -2)
 
 
@@ -129,13 +129,13 @@ def getDartRegion(dart_loc, calData):
 
     #system not calibrated
     except AttributeError as err1:
-        print err1
+        print (err1)
         dartInfo = DartDef()
         return dartInfo
 
     except NameError as err2:
         #not calibrated error
-        print err2
+        print (err2)
         dartInfo = DartDef()
         return dartInfo
 

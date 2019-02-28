@@ -1,6 +1,6 @@
 __author__ = "Hannes Hoettinger"
 
-from Tkinter import *
+from tkinter import *
 from Calibration_1 import *
 from DartsRecognition import *
 from thread import *
@@ -64,7 +64,7 @@ def GameOn():
 
 def printin(event):
     test = str(eval(GUI.e1.get()))
-    print test
+    print (test)
 
 
 def calibrateGUI():
