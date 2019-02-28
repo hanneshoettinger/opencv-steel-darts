@@ -1,3 +1,10 @@
+# Changelog
+* 2019-02-28 - Patrick Hener
+** Migrated to Python3
+** Removed dependency opencv (v1) so you can use current opencv implementation. Testted version is opencv 4.0.0
+** Quick cleanup: Moved not used code to folder archived 
+
+
 # opencv-steel-darts
 Automatic scoring system for steel darts using OpenCV, a Raspberry Pi 3 Model B and two webcams.
 
