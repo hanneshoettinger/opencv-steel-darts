@@ -3,7 +3,7 @@ __author__ = "Hannes Hoettinger"
 from tkinter import *
 from Calibration_1 import *
 from DartsRecognition import *
-from thread import *
+from _thread import *
 from Classes import *
 
 import cv2
@@ -17,8 +17,8 @@ scoreplayer2 = 501
 
 points = []
 
-cam_R = VideoStream(src=2).start()
-cam_L = VideoStream(src=3).start()
+cam_R = VideoStream(src=0).start()
+cam_L = VideoStream(src=1).start()
 
 calData_R = CalibrationData()
 calData_L = CalibrationData()
