@@ -1,7 +1,6 @@
 __author__ = "Hannes Hoettinger"
 
 import cv2                   #open cv2
-import cv2.cv as cv          #open cv
 import time
 import numpy as np
 from threading import Thread
@@ -25,6 +24,10 @@ winName3 = "hsv image colors?"
 winName4 = "Calibration?"
 winName5 = "Choose Ring"
 
+# Config video sources here
+# You'll need to setup the numbers according to "/dev/videoX"
+cam1 = 0
+cam2 = 1
 
 def nothing(x):
     pass
@@ -491,8 +494,7 @@ def calibrate(cam_R, cam_L):
 
 if __name__ == '__main__':
     print ("Welcome to darts!")
-
-    cam_R = VideoStream(src=2).start()
-    cam_L = VideoStream(src=3).start()
+    cam_R = VideoStream(src=cam1).start()
+    cam_L = VideoStream(src=cam2).start()
 
     calibrate(cam_R, cam_L)

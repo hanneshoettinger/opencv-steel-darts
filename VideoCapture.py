@@ -3,7 +3,6 @@ __author__ = "Hannes Hoettinger"
 # import the necessary packages
 from threading import Thread
 import cv2
-import cv2.cv as cv
 
 # function call:
 # vs = VideoStream(src=0).start()
@@ -15,8 +14,8 @@ class VideoStream:
         # initialize the video camera stream and read the first frame
         # from the stream
         self.stream = cv2.VideoCapture(src)
-        self.stream.set(cv.CV_CAP_PROP_FRAME_WIDTH, 800)
-        self.stream.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 600)
+        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 800)
+        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 600)
         (self.grabbed, self.frame) = self.stream.read()
 
         # initialize the variable used to indicate if the thread should
