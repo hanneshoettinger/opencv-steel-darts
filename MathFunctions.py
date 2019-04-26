@@ -1,22 +1,22 @@
 __author__ = "Hannes Hoettinger"
 
-import numpy as np
-import cv2
-import math
-import pickle
+# import numpy as np
+# import cv2
+# import math
+# import pickle
 from Classes import *
 
 DEBUG = True
 
 
 # distance point to line
-def dist(x1,y1, x2,y2, x3,y3): # x3,y3 is the point
+def dist(x1,y1, x2,y2, x3,y3):  # x3,y3 is the point
     px = x2-x1
     py = y2-y1
 
     something = px*px + py*py
 
-    u =  ((x3 - x1) * px + (y3 - y1) * py) / float(something)
+    u = ((x3 - x1) * px + (y3 - y1) * py) / float(something)
 
     if u > 1:
         u = 1
@@ -40,37 +40,37 @@ def dist(x1,y1, x2,y2, x3,y3): # x3,y3 is the point
     return dist
 
 
-def intersectLineCircle(center, radius, p1, p2):
-    baX = p2[0] - p1[0]
-    baY = p2[1] - p1[1]
-    caX = center[0] - p1[0]
-    caY = center[1] - p1[1]
+def intersect_line_circle(center, radius, p1, p2):
+    ba_x = p2[0] - p1[0]
+    ba_y = p2[1] - p1[1]
+    ca_x = center[0] - p1[0]
+    ca_y = center[1] - p1[1]
 
-    a = baX * baX + baY * baY
-    bBy2 = baX * caX + baY * caY
-    c = caX * caX + caY * caY - radius * radius
+    a = ba_x * ba_x + ba_y * ba_y
+    b_by2 = ba_x * ca_x + ba_y * ca_y
+    c = ca_x * ca_x + ca_y * ca_y - radius * radius
 
-    pBy2 = bBy2 / a
+    p_by2 = b_by2 / a
     q = c / a
 
-    disc = pBy2 * pBy2 - q
+    disc = p_by2 * p_by2 - q
     if disc < 0:
         return False, None, False, None
 
-    tmpSqrt = math.sqrt(disc)
-    abScalingFactor1 = -pBy2 + tmpSqrt
-    abScalingFactor2 = -pBy2 - tmpSqrt
+    tmp_sqrt = math.sqrt(disc)
+    ab_scaling_factor1 = -p_by2 + tmp_sqrt
+    ab_scaling_factor2 = -p_by2 - tmp_sqrt
 
-    pint1 = p1[0] - baX * abScalingFactor1, p1[1] - baY * abScalingFactor1
+    pint1 = p1[0] - ba_x * ab_scaling_factor1, p1[1] - ba_y * ab_scaling_factor1
     if disc == 0:
         return True, pint1, False, None
 
-    pint2 = p1[0] - baX * abScalingFactor2, p1[1] - baY * abScalingFactor2
+    pint2 = p1[0] - ba_x * ab_scaling_factor2, p1[1] - ba_y * ab_scaling_factor2
     return True, pint1, True, pint2
 
 
 # line intersection
-def intersectLines(pt1, pt2, ptA, ptB):
+def intersect_lines(pt1, pt2, pt_a, pt_b):
     """ this returns the intersection of Line(pt1,pt2) and Line(ptA,ptB)
 
         returns a tuple: (xi, yi, valid, r, s), where
@@ -80,7 +80,7 @@ def intersectLines(pt1, pt2, ptA, ptB):
             valid == 0 if there are 0 or inf. intersections (invalid)
             valid == 1 if it has a unique intersection ON the segment    """
 
-    DET_TOLERANCE = 0.00000001
+    det_tolerance = 0.00000001
 
     # the first line is pt1 + r*(pt2-pt1)
     # in component form:
@@ -90,24 +90,24 @@ def intersectLines(pt1, pt2, ptA, ptB):
     dy1 = y2 - y1
 
     # the second line is ptA + s*(ptB-ptA)
-    x, y = ptA
-    xB, yB = ptB
-    dx = xB - x
-    dy = yB - y
+    x, y = pt_a
+    x_b, y_b = pt_b
+    dx = x_b - x
+    dy = y_b - y
 
-    DET = (-dx1 * dy + dy1 * dx)
+    det = (-dx1 * dy + dy1 * dx)
 
-    if math.fabs(DET) < DET_TOLERANCE:
+    if math.fabs(det) < det_tolerance:
         return 0, 0
 
     # now, the determinant should be OK
-    DETinv = 1.0 / DET
+    de_tinv = 1.0 / det
 
     # find the scalar amount along the "self" segment
-    r = DETinv * (-dy * (x - x1) + dx * (y - y1))
+    r = de_tinv * (-dy * (x - x1) + dx * (y - y1))
 
     # find the scalar amount along the input line
-    s = DETinv * (-dy1 * (x - x1) + dx1 * (y - y1))
+    s = de_tinv * (-dy1 * (x - x1) + dx1 * (y - y1))
 
     # return the average of the two descriptions
     x = (x1 + r * dx1 + x + s * dx) / 2.0

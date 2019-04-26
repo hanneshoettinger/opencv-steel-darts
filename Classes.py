@@ -1,7 +1,7 @@
 __author__ = "Hannes Hoettinger"
 
 import math
-import cv2
+# import cv2
 
 DEBUG = True
 
@@ -41,19 +41,18 @@ class EllipseDef:
         self.angle = -1
 
 
-#For file IO
+# For file IO
 class CalibrationData:
     def __init__(self):
-        #for perspective transform
+        # for perspective transform
         self.top = []
         self.bottom = []
         self.left = []
         self.right = []
         self.points = []
-        #radii of the rings, there are 6 in total
+        # radii of the rings, there are 6 in total
         self.ring_radius = [14, 32, 194, 214, 320, 340]
         self.center_dartboard = (400, 400)
         self.sectorangle = 2 * math.pi / 20
         self.dstpoints = []
         self.transformation_matrix = []
-

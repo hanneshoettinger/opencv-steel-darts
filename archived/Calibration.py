@@ -62,7 +62,7 @@ except:
     #logger.debug(VisualRecord("Hello from OpenCV", imCalHSV, "This is openCV image", fmt="png"))
     #logger.warning(VisualRecord("Hello from all", [imCalHSV, imCalRGB], fmt="png"))
 
-calibrationComplete = False
+calibration_complete = False
 new_image = imCalRGB.copy() # from camera = 480, 640  # from video 1080, 1920
 image_proc_img = imCalRGB.copy()
 imCalRGBorig = imCalRGB.copy()
@@ -261,7 +261,7 @@ def calibrate():
     #success,imCalRGB = cam.read() #cam
     cv2.imwrite("frame1.jpg", imCalRGB)     # save calibration frame
 
-    global calibrationComplete
+    global calibration_complete
     calibrationComplete = False
 
     while calibrationComplete == False:
