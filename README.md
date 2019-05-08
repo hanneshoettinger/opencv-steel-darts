@@ -18,6 +18,7 @@ We have created a Facebook Group, where we discuss our current progress and try 
 https://www.facebook.com/groups/281778298914107/
 
 ### ToDo: 
+* create virtualenv for easy setup process
 * improve calibration routine
 * improve processing performance with second camera (USB bandwidth issue?)
 * clean up and restructure the code!
