@@ -26,7 +26,7 @@ winName5 = "Choose Ring"
 # Config video sources here
 # You'll need to setup the numbers according to "/dev/videoX"
 cam1 = 0
-cam2 = 1
+cam2 = 2
 
 
 def nothing(x):

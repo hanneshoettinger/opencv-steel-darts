@@ -18,7 +18,7 @@ scoreplayer2 = 501
 points = []
 
 cam_R = VideoStream(src=0).start()
-cam_L = VideoStream(src=1).start()
+cam_L = VideoStream(src=2).start()
 
 calData_R = CalibrationData()
 calData_L = CalibrationData()

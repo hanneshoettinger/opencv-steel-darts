@@ -299,11 +299,11 @@ if __name__ == '__main__':
     #img = cv2.imread("D:\Projekte\PycharmProjects\DartsScorer\Darts\Dartboard_2.png")
     #img2 = cv2.imread("D:\Projekte\PycharmProjects\DartsScorer\Darts\Dartboard_3.png")
 
-    vidcap = cv2.VideoCapture("dummy_src/"
-                              ""
-                              ""
-                              ""
-                    Darts_Testvideo_9_1.mp4")
+    #  vidcap = cv2.VideoCapture("dummy_src/"
+                              #  ""
+                              #  ""
+                              #  ""
+                    #  Darts_Testvideo_9_1.mp4")
     from_video = False
 
     # if DEBUG:
