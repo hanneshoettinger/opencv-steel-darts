@@ -7,3 +7,4 @@ GUI/darts-linux.zip
 .idea
 .vscode
 *.pkl
+.venv
