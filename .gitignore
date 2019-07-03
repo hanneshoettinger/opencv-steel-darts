@@ -4,7 +4,7 @@ Videos
 GUI/darts-arm-linux.zip
 GUI/darts-linux.zip
 *.pyc
-.idea
-.vscode
+.idea/
+.vscode/
 *.pkl
-.venv
+.venv/
