@@ -5,8 +5,14 @@ parser = argparse.ArgumentParser(
     description="OpenCV based steel darts recognition"
 )
 
-parser.add_argument(
-    '-m', '--mode', dest="MODE", type=str, default="run", help=("first [calibrate] then [run] (default: %(default)s")
+scoreboard_group = parser.add_argument_group(description="Give details where to reach scoreboard host listening for API requests")
+
+scoreboard_group.add_argument(
+    dest="SB_HOST", type=str, default="127.0.0.1", help=("scoreboard host to send api calls to (default: %(default)s)")
+)
+
+scoreboard_group.add_argument(
+    dest="SB_PORT", type=int, default=5000, help=("scoreboard port to send api calls to (default: %(default)s)")
 )
 
 parser.add_argument(

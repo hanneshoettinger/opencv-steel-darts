@@ -6,6 +6,10 @@ import signal
 
 from osd.logging import log
 
+# Debugging
+from osd.draw import Draw
+# End Debugging
+
 def signal_handler(sig, frame):
     log.info("CTRL-C caught, exiting...")
 
@@ -20,4 +24,10 @@ def start_thread(f, *args):
 
 def main(fully_threaded=False):
     signal.signal(signal.SIGINT, signal_handler)
-    print("Test")
+    # Debugging
+    # Draw here to test board
+    # But first TODO will be calibration for havig calibration data
+
+    # End Debugging
+
+
